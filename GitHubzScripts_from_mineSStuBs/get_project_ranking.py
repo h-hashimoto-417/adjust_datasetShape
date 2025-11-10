@@ -6,16 +6,16 @@ import numpy as np
 # The dumps should be available at http://ghtorrent.org/downloads.html
 
 if len(sys.argv) < 4:
-        print "Usage <dir> <language> <outcsv>"
+        print ("Usage <dir> <language> <outcsv>")
         sys.exit(-1)
 
 dump_directory = sys.argv[1]
 target_language = sys.argv[2]
 output_file = sys.argv[3]
 
-print "Retrieving the top %s projects from %s" % (target_language, dump_directory)
+print(f"Retrieving the top {target_language} projects from {dump_directory}")
 
-print "Loading data..."
+print ("Loading data...")
 
 projects = {}  # project_id -> project_data
 with open(os.path.join(dump_directory, 'projects.csv')) as f:
@@ -32,7 +32,7 @@ with open(os.path.join(dump_directory, 'projects.csv')) as f:
                         continue
                 projects[project_id] = {"url":project_url, "forks":0, "watchers":0}
 
-print "Collected %s projects" % len(projects)
+print (f"Collected {len(projects)} projects")
 with open(os.path.join(dump_directory, 'projects.csv')) as f:
         data = csv.reader(f, doublequote=False, escapechar='\\', quotechar='"')
         for project in data:
@@ -50,16 +50,16 @@ with open(os.path.join(dump_directory, 'watchers.csv')) as f:
                 if project_id in projects:
                          projects[project_id]["watchers"] += 1
 
-print "Computing scores..."
+print ("Computing scores...")
 forks_elements = [d["forks"] for d in projects.values()]
 forks_elements = np.array(forks_elements)
 fork_mean, fork_std = np.mean(forks_elements), np.std(forks_elements)
-print "Fork stats avg=%s std=%s" % (fork_mean, fork_std)
+print (f"Fork stats avg={fork_mean} std={fork_std}")
 
 watchers_elements = [d["watchers"] for d in projects.values()]
 watchers_elements = np.array(watchers_elements)
 watchers_mean, watchers_std = np.mean(watchers_elements), np.std(watchers_elements)
-print "Watcher stats avg=%s std=%s" % (watchers_mean, watchers_std)
+print (f"Watcher stats avg={watchers_mean} std={watchers_std}" )
 
 zscore = lambda element, mean, std: (element - mean) /std
 
