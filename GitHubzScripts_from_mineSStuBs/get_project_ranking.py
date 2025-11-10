@@ -25,9 +25,9 @@ with open(os.path.join(dump_directory, 'projects.csv')) as f:
                 project_url = project[1]
                 project_language = project[5]
                 try:
-                    	is_fork = int(project[7]) >= 0
+                            is_fork = int(project[7]) >= 0
                 except:
-                       	is_fork = False
+                               is_fork = False
                 if is_fork or project_language != target_language:
                         continue
                 projects[project_id] = {"url":project_url, "forks":0, "watchers":0}
@@ -37,7 +37,7 @@ with open(os.path.join(dump_directory, 'projects.csv')) as f:
         data = csv.reader(f, doublequote=False, escapechar='\\', quotechar='"')
         for project in data:
                 try:
-                    	forked_from = int(project[7])
+                            forked_from = int(project[7])
                 except:
                         forked_from = -1
                 if forked_from in projects:
@@ -70,7 +70,7 @@ top_projects = sorted(projects.keys(), key=lambda p:projects[p]["score"], revers
 
 with open(output_file, 'w') as f:
         writer = csv.writer(f)
-        for i in xrange(len(top_projects)):
+        for i in range(len(top_projects)):
                 project_id = top_projects[i]
                 project_data = projects[project_id]
                 row = [project_data["url"], project_data["forks"], project_data["watchers"], project_data["score"]]
