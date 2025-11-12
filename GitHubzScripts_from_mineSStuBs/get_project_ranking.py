@@ -13,9 +13,9 @@ dump_directory = sys.argv[1]
 target_language = sys.argv[2]
 output_file = sys.argv[3]
 
-print "Retrieving the top %s projects from %s" % (target_language, dump_directory)
+print(f"Retrieving the top {target_language} projects from {dump_directory}")
 
-print "Loading data..."
+print ("Loading data...")
 
 projects = {}  # project_id -> project_data
 with open(os.path.join(dump_directory, 'projects.csv')) as f:
@@ -25,19 +25,19 @@ with open(os.path.join(dump_directory, 'projects.csv')) as f:
                 project_url = project[1]
                 project_language = project[5]
                 try:
-                    	is_fork = int(project[7]) >= 0
+                            is_fork = int(project[7]) >= 0
                 except:
-                       	is_fork = False
+                               is_fork = False
                 if is_fork or project_language != target_language:
                         continue
                 projects[project_id] = {"url":project_url, "forks":0, "watchers":0}
 
-print "Collected %s projects" % len(projects)
+print (f"Collected {len(projects)} projects")
 with open(os.path.join(dump_directory, 'projects.csv')) as f:
         data = csv.reader(f, doublequote=False, escapechar='\\', quotechar='"')
         for project in data:
                 try:
-                    	forked_from = int(project[7])
+                            forked_from = int(project[7])
                 except:
                         forked_from = -1
                 if forked_from in projects:
@@ -50,16 +50,16 @@ with open(os.path.join(dump_directory, 'watchers.csv')) as f:
                 if project_id in projects:
                          projects[project_id]["watchers"] += 1
 
-print "Computing scores..."
+print ("Computing scores...")
 forks_elements = [d["forks"] for d in projects.values()]
 forks_elements = np.array(forks_elements)
 fork_mean, fork_std = np.mean(forks_elements), np.std(forks_elements)
-print "Fork stats avg=%s std=%s" % (fork_mean, fork_std)
+print (f"Fork stats avg={fork_mean} std={fork_std}")
 
 watchers_elements = [d["watchers"] for d in projects.values()]
 watchers_elements = np.array(watchers_elements)
 watchers_mean, watchers_std = np.mean(watchers_elements), np.std(watchers_elements)
-print "Watcher stats avg=%s std=%s" % (watchers_mean, watchers_std)
+print (f"Watcher stats avg={watchers_mean} std={watchers_std}" )
 
 zscore = lambda element, mean, std: (element - mean) /std
 
@@ -70,7 +70,7 @@ top_projects = sorted(projects.keys(), key=lambda p:projects[p]["score"], revers
 
 with open(output_file, 'w') as f:
         writer = csv.writer(f)
-        for i in xrange(len(top_projects)):
+        for i in range(len(top_projects)):
                 project_id = top_projects[i]
                 project_data = projects[project_id]
                 row = [project_data["url"], project_data["forks"], project_data["watchers"], project_data["score"]]
