@@ -58,6 +58,17 @@ def output_csv_filelevel( data ):
     df = pd.DataFrame(data)
     for project_url in project_url_generator( projects_list_file, projects_num ):
          project_name = get_project_name( project_url )
+         # project_nameに対応するデータを抽出
+         df_project = df[df["projectName"] == project_name].copy()
+         # 必要な列のみ抽出、列名変更
+         df_dataset = df_project[["bugFilePath", "bugType"]].copy()
+         df_dataset = df_dataset.rename(columns={"bugFilePath": "File"})
+         # File列にproject_nameを追加
+         df_dataset["File"] = project_name + "/" + df_dataset["File"]
+         # 今回はbugのあるファイルのみを扱う
+         df_dataset.insert(1, "Bug", True)
+
+         save_csv(file_level_path, f'{project_name}.csv', df_dataset)
     
 
 def output_csv_linelevel( data ):
