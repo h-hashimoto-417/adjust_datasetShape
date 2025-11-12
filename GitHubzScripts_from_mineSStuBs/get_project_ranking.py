@@ -6,7 +6,7 @@ import numpy as np
 # The dumps should be available at http://ghtorrent.org/downloads.html
 
 if len(sys.argv) < 4:
-        print "Usage <dir> <language> <outcsv>"
+        print ("Usage <dir> <language> <outcsv>")
         sys.exit(-1)
 
 dump_directory = sys.argv[1]
