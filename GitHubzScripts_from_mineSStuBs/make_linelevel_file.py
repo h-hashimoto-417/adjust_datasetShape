@@ -53,7 +53,7 @@ def save_csv(file_path, file_name, data):
     """
     make_path(file_path)
     # dataはpandasのDataFrame型を想定
-    data.to_csv(f'{file_path}{file_name}', index=False, encoding="utf-8", newline="")
+    data.to_csv(f'{file_path}{file_name}', index=False, encoding="utf-8")
     #print(f'Result has been saved to {file_path}{file_name} successfully!')
 
 def make_path(path):
@@ -65,26 +65,43 @@ def make_path(path):
     if not os.path.exists(path):
         os.makedirs(path)
 
-def output_csv_filelevel( data ):
+def make_dataset( data ):
     # projectごとにcsvファイルを生成
     # file_path, SRCをそれぞれ取得
     df = pd.DataFrame(data)
     for project_url in project_url_generator( projects_list_file, PROJECTS_NUM ):
-         project_name = get_project_repo_name( project_url )
-         print ('Processing project:'), project_name
+         repo_name = get_project_repo_name( project_url )
+         print ('Processing project:'), repo_name
+         project_name = get_project_name( project_url )
          # project_nameに対応するデータを抽出
-         df_project = df[df["projectName"] == project_name].copy()
+         df_project = df[df["projectName"] == repo_name].copy()
+         # df_projectが空の場合はスキップ
+         if df_project.empty:
+            print(f'Warning: No data for project {repo_name}. Skipping.')
+            continue
+
+         ###### file-levelデータ作成 ######
          # 必要な列のみ抽出、列名変更
-         df_dataset = df_project[["bugFilePath", "bugType"]].copy()
-         df_dataset = df_dataset.rename(columns={"bugFilePath": "File"})
+         df_filelevel = df_project[["bugFilePath", "bugType"]].copy()
+         df_filelevel = df_filelevel.rename(columns={"bugFilePath": "File"})
          # File列にproject_nameを追加
-         df_dataset["File"] = project_name + "/" + df_dataset["File"]
+         df_filelevel["File"] = project_name + "/" + df_filelevel["File"]
          # 今回はbugのあるファイルのみを扱う
-         df_dataset.insert(1, "Bug", True)
+         df_filelevel.insert(1, "Bug", True)
 
-         save_csv(file_level_path, f'{get_project_name(project_url)}.csv', df_dataset)
+         ###### line-levelデータ作成 ######
+         # 必要な列のみ抽出、列名変更
+         df_linelevel = df_project[["bugFilePath", "bugLineNum", "sourceBeforeFix", "bugType"]].copy()
+         df_linelevel = df_linelevel.rename(columns={"bugFilePath": "File", "bugLineNum": "Line_number", "sourceBeforeFix": "SRC"})
+         # File列にproject_nameを追加
+         df_linelevel["File"] = project_name + "/" + df_linelevel["File"]
+         
+         filelevel_csv_name = f'{project_name}_files_dataset.csv'
+         linelevel_csv_name = f'{project_name}_defective_lines_dataset.csv'
+         save_csv(file_level_path, filelevel_csv_name, df_filelevel)
+         save_csv(line_level_path, linelevel_csv_name, df_linelevel)
 
-         if os.path.isfile(f'{file_level_path}{get_project_name(project_url)}.csv'):
+         if os.path.isfile(f'{file_level_path}{filelevel_csv_name}'):
             global projects_yielded
             projects_yielded += 1
             print(f'Success: {project_name} file-level csv created.')
@@ -92,15 +109,12 @@ def output_csv_filelevel( data ):
             print(f'Error: {project_name} file-level csv not created.')
     
 
-def output_csv_linelevel( data ):
-    # projectごとにcsvファイルを生成
-    # file_path, Line_number, SRCをそれぞれ取得(bugtypeもあった方がいいかも)
-    return
 
 def main():    
     # jsonデータの読み込み
     jsondata = read_json_file(sstubs_file)
 
-    output_csv_filelevel(jsondata)
-    output_csv_linelevel(jsondata)
+    make_dataset(jsondata)
 
+if __name__ == "__main__":
+    main()
