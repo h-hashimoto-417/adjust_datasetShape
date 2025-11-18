@@ -8,7 +8,8 @@ from git import Repo
 
 
 # path
-root_path = r'C:/Users/hitom/GitHubrepo/'
+#root_path = r'C:/Users/hitom/GitHubrepo/'
+root_path = r'/Users/hashimoto/Githubrepo/'
 folder_string = 'adjust_dataset'
 dataset_string = 'Dataset_project'
 result_string = 'Adjusted_Dataset'
