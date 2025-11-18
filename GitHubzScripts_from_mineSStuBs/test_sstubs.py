@@ -54,7 +54,7 @@ for row in df_project.iterrows():
     commit_sha = row["fixfixCommitParentSHA1"]
     file_path = row["bugFilePath"]
     try:
-        src_content = get_file_content_at_commit(f'{dataset_project_path}{project_name}', commit_sha, file_path)
+        src_content = get_file_content_at_commit(f'{dataset_project_path}{repo_name}', commit_sha, file_path)
         print(src_content)
     except Exception as e:
         print(f'Error retrieving file content for {file_path} at commit {commit_sha}: {e}')

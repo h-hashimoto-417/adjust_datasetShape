@@ -91,13 +91,16 @@ def make_dataset( data ):
     df = pd.DataFrame(data)
     for project_url in project_url_generator( projects_list_file, PROJECTS_NUM ):
          repo_name = get_project_repo_name( project_url )
-         print ('Processing project:'), repo_name
+         print (f'Processing project: {repo_name}')
          project_name = get_project_name( project_url )
          # project_nameに対応するデータを抽出
          df_project = df[df["projectName"] == repo_name].copy()
          # df_projectが空の場合はスキップ
          if df_project.empty:
             print(f'Warning: No data for project {repo_name}. Skipping.')
+            continue
+         if os.path.isdir(f'{dataset_project_path}{repo_name}') is False:
+            print(f'Warning: Project directory {dataset_project_path}{repo_name} does not exist. Skipping.')
             continue
 
          ###### file-levelデータ作成 ######
@@ -113,12 +116,11 @@ def make_dataset( data ):
              commit_sha = row["fixfixCommitParentSHA1"]
              file_path = row["bugFilePath"]
              try:
-                 src_content = get_file_content_at_commit(f'{dataset_project_path}{project_name}', commit_sha, file_path)
+                 src_content = get_file_content_at_commit(f'{dataset_project_path}{repo_name}', commit_sha, file_path)
              except Exception as e:
                  print(f'Error retrieving file content for {file_path} at commit {commit_sha}: {e}')
                  src_content = ""
-             df_filelevel.loc[df_filelevel["File"] == f'{project_name}/{file_path}', "SRC"] = src_content
-
+             df_filelevel.loc[df_filelevel["File"] == f'{repo_name}/{file_path}', "SRC"] = src_content
 
          ###### line-levelデータ作成 ######
          # 必要な列のみ抽出、列名変更
