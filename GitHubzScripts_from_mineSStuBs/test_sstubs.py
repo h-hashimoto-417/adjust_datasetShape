@@ -51,7 +51,7 @@ if df_project.empty:
 
 # それぞれのファイルのSRCを取得
 for index,row in df_project.iterrows():
-    commit_sha = row["fixfixCommitParentSHA1"]
+    commit_sha = row["fixCommitParentSHA1"]
     file_path = row["bugFilePath"]
     try:
         src_content = get_file_content_at_commit(f'{dataset_project_path}{repo_name}', commit_sha, file_path)
