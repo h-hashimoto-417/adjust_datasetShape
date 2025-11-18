@@ -39,7 +39,7 @@ def main():
 	for project_url in project_url_generator( projects_list_file, projects_num_to_download ):
 		print ('Downloading project:'), get_project_repo_name( project_url )
 		project_dir = '%s/%s' % (dataset_folder, get_project_repo_name( project_url ))
-		if os.path.isdir( project_dir ):
+		if os.path.isdir( f'{dataset_folder}{project_dir}' ):
 			print ('  Project already exists. Skipping download.')
 			continue
 
