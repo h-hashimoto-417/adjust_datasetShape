@@ -11,7 +11,7 @@ folder_string = 'adjust_dataset'
 dataset_string = 'Dataset_project'
 result_string = 'Adjusted_Dataset'
 
-sstubs_file = f'{root_path}{folder_string}/sstubs.json'
+sstubs_file = f'{root_path}{folder_string}/sstubs'
 bugs_file = f'{root_path}{folder_string}/bugs.json'
 dataset_project_path = f'{root_path}{dataset_string}/'
 
