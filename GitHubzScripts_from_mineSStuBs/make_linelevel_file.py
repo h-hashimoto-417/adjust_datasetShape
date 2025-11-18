@@ -3,6 +3,8 @@ import sys
 import pandas as pd
 import json
 import csv
+from git import Repo
+
 
 
 # path
@@ -65,6 +67,23 @@ def make_path(path):
     if not os.path.exists(path):
         os.makedirs(path)
 
+def get_file_content_at_commit(repo_path: str, commit_sha: str, file_path: str) -> str:
+    """
+    指定したコミット時点でのファイル内容（string）を取得する関数
+    :param repo_path: ローカルにクローンした Git リポジトリのパス
+    :param commit_sha: 親コミットなど、取得したいコミットのハッシュ
+    :param file_path: リポジトリ内での相対パス（例: "src/main.py"）
+    :return: str（ファイル内容）
+    """
+    repo = Repo(repo_path)
+    commit = repo.commit(commit_sha)
+    
+    # ファイルの blob を取得する
+    blob = commit.tree / file_path
+
+    # blob.data_stream.read() は bytes なので decode する
+    return blob.data_stream.read().decode("utf-8")
+
 def make_dataset( data ):
     # projectごとにcsvファイルを生成
     # file_path, SRCをそれぞれ取得
@@ -88,6 +107,16 @@ def make_dataset( data ):
          df_filelevel["File"] = project_name + "/" + df_filelevel["File"]
          # 今回はbugのあるファイルのみを扱う
          df_filelevel.insert(1, "Bug", True)
+         # それぞれのファイルのSRCを取得
+         for commit_sha in df_project["fixCommitParentSHA1"]:
+             file_path = df_project["bugFilePath"].values[0]
+             try:
+                 src_content = get_file_content_at_commit(f'{dataset_project_path}{project_name}', commit_sha, file_path)
+             except Exception as e:
+                 print(f'Error retrieving file content for {file_path} at commit {commit_sha}: {e}')
+                 src_content = ""
+             df_filelevel.loc[df_filelevel["File"] == f'{project_name}/{file_path}', "SRC"] = src_content
+
 
          ###### line-levelデータ作成 ######
          # 必要な列のみ抽出、列名変更
