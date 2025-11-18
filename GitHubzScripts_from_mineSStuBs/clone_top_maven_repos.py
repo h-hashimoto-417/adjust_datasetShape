@@ -47,8 +47,8 @@ def main():
 		if os.path.isfile('%s/pom.xml' % project_dir):
 			global maven_projects_yielded
 			maven_projects_yielded += 1
-		else:
-			os.system('rm -r -f %s' % project_dir )
+		#else:
+			#os.system('rm -r -f %s' % project_dir )
 
 
 if __name__ == "__main__":
