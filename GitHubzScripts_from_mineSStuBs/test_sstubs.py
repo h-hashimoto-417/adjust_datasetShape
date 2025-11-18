@@ -50,7 +50,7 @@ if df_project.empty:
     print(f'Warning: No data for project {repo_name}. Skipping.')
 
 # それぞれのファイルのSRCを取得
-for row in df_project.iterrows():
+for index,row in df_project.iterrows():
     commit_sha = row["fixfixCommitParentSHA1"]
     file_path = row["bugFilePath"]
     try:

@@ -112,7 +112,7 @@ def make_dataset( data ):
          # 今回はbugのあるファイルのみを扱う
          df_filelevel.insert(1, "Bug", True)
          # それぞれのファイルのSRCを取得
-         for row in df_project.iterrows():
+         for index,row in df_project.iterrows():
              commit_sha = row["fixfixCommitParentSHA1"]
              file_path = row["bugFilePath"]
              try:
