@@ -108,8 +108,9 @@ def make_dataset( data ):
          # 今回はbugのあるファイルのみを扱う
          df_filelevel.insert(1, "Bug", True)
          # それぞれのファイルのSRCを取得
-         for commit_sha in df_project["fixCommitParentSHA1"]:
-             file_path = df_project["bugFilePath"].values[0]
+         for row in df_project.iterrows():
+             commit_sha = row["fixfixCommitParentSHA1"]
+             file_path = row["bugFilePath"]
              try:
                  src_content = get_file_content_at_commit(f'{dataset_project_path}{project_name}', commit_sha, file_path)
              except Exception as e:
