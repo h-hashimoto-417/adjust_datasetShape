@@ -17,8 +17,8 @@ result_string = 'Adjusted_Dataset'
 sstubs_file = f'{root_path}{folder_string}/sstubs'
 bugs_file = f'{root_path}{folder_string}/bugs'
 projects_list_file = f'{root_path}{folder_string}/topJavaMavenProjects.csv'
-file_level_path = f'{root_path}{folder_string}{result_string}/File-level/'
-line_level_path = f'{root_path}{folder_string}{result_string}/Line-level/'
+file_level_path = f'{root_path}{folder_string}/{result_string}/File-level/'
+line_level_path = f'{root_path}{folder_string}/{result_string}/Line-level/'
 dataset_project_path = f'{root_path}{dataset_string}/'
 # 定数
 PROJECTS_NUM = 100
