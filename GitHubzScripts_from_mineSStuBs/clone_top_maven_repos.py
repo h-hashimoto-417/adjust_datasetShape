@@ -39,12 +39,16 @@ def main():
 	for project_url in project_url_generator( projects_list_file, projects_num_to_download ):
 		print ('Downloading project:'), get_project_repo_name( project_url )
 		project_dir = '%s/%s' % (dataset_folder, get_project_repo_name( project_url ))
+		if os.path.isdir( f'{dataset_folder}{project_dir}' ):
+			print ('  Project already exists. Skipping download.')
+			continue
+
 		os.system('git clone https://%s:%s@github.com/%s %s' % (git_username, git_passwd, get_project_repo_name_slash(project_url), project_dir))
 		if os.path.isfile('%s/pom.xml' % project_dir):
 			global maven_projects_yielded
 			maven_projects_yielded += 1
-		else:
-			os.system('rm -r -f %s' % project_dir )
+		#else:
+			#os.system('rm -r -f %s' % project_dir )
 
 
 if __name__ == "__main__":
