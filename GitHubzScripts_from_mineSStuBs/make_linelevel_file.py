@@ -125,7 +125,7 @@ def make_dataset( data ):
              except Exception as e:
                  print(f'Error retrieving file content for {file_path} at commit {commit_sha}: {e}')
                  src_content = ""
-             df_filelevel.iloc[index, df_filelevel.columns.get_loc("SRC")] = src_content
+             df_filelevel.loc[index, "SRC"] = src_content
 
          ###### line-levelデータ作成 ######
          # 必要な列のみ抽出、列名変更
