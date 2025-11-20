@@ -34,6 +34,10 @@ def get_project_repo_name( project_url ):
 	user, project_name = project_url.split('/')[-2:]
 	return '%s.%s' % (user, project_name)
 
+def get_project_repo_name_hyphen( project_url ):
+	user, project_name = project_url.split('/')[-2:]
+	return '%s-%s' % (user, project_name)
+
 def get_project_name( project_url ):
 	project_name = project_url.split('/')[-1]
 	return '%s' % (project_name)
@@ -92,8 +96,8 @@ def make_dataset( data ):
     for project_url in project_url_generator( projects_list_file, PROJECTS_NUM ):
          repo_name = get_project_repo_name( project_url )
          print (f'Processing project: {repo_name}')
-         project_name = get_project_name( project_url )
-         # project_nameに対応するデータを抽出
+         project_name = get_project_repo_name_hyphen( project_url )
+         # repo_nameに対応するデータを抽出
          df_project = df[df["projectName"] == repo_name].copy()
          # df_projectが空の場合はスキップ
          if df_project.empty:
@@ -108,10 +112,11 @@ def make_dataset( data ):
          df_filelevel = df_project[["bugFilePath", "bugType"]].copy()
          df_filelevel = df_filelevel.rename(columns={"bugFilePath": "File"})
          # File列にproject_nameを追加
-         df_filelevel["File"] = project_name + "/" + df_filelevel["File"]
+         #df_filelevel["File"] = project_name + "/" + df_filelevel["File"]
          # 今回はbugのあるファイルのみを扱う
-         df_filelevel.insert(1, "Bug", True)
+         df_filelevel.insert(df_filelevel.columns.get_loc("File") + 1, "Bug", True)
          # それぞれのファイルのSRCを取得
+         df_filelevel.insert(df_filelevel.columns.get_loc("Bug") + 1, "SRC", "")
          for index,row in df_project.iterrows():
              commit_sha = row["fixCommitParentSHA1"]
              file_path = row["bugFilePath"]
@@ -120,26 +125,26 @@ def make_dataset( data ):
              except Exception as e:
                  print(f'Error retrieving file content for {file_path} at commit {commit_sha}: {e}')
                  src_content = ""
-             df_filelevel.loc[df_filelevel["File"] == f'{repo_name}/{file_path}', "SRC"] = src_content
+             df_filelevel.iloc[index, df_filelevel.columns.get_loc("SRC")] = src_content
 
          ###### line-levelデータ作成 ######
          # 必要な列のみ抽出、列名変更
          df_linelevel = df_project[["bugFilePath", "bugLineNum", "sourceBeforeFix", "bugType"]].copy()
          df_linelevel = df_linelevel.rename(columns={"bugFilePath": "File", "bugLineNum": "Line_number", "sourceBeforeFix": "SRC"})
          # File列にproject_nameを追加
-         df_linelevel["File"] = project_name + "/" + df_linelevel["File"]
+         #df_linelevel["File"] = project_name + "/" + df_linelevel["File"]
          
          filelevel_csv_name = f'{project_name}_files_dataset.csv'
          linelevel_csv_name = f'{project_name}_defective_lines_dataset.csv'
          save_csv(file_level_path, filelevel_csv_name, df_filelevel)
          save_csv(line_level_path, linelevel_csv_name, df_linelevel)
 
-         if os.path.isfile(f'{file_level_path}{filelevel_csv_name}'):
+         if os.path.isfile(f'{file_level_path}{filelevel_csv_name}') and os.path.isfile(f'{line_level_path}{linelevel_csv_name}'):
             global projects_yielded
             projects_yielded += 1
-            print(f'Success: {project_name} file-level csv created.')
+            print(f'Success: {project_name} file-level and line-level csv created.')
          else:
-            print(f'Error: {project_name} file-level csv not created.')
+            print(f'Error: {project_name} csv not created.')
     
 
 
