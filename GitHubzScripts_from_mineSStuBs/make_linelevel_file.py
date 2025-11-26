@@ -12,13 +12,13 @@ from git import Repo
 root_path = r'/Users/hashimoto/Githubrepo/'
 folder_string = 'adjust_dataset'
 dataset_string = 'Dataset_project'
-result_string = 'Adjusted_Dataset'
+result_string = 'Dataset'
 
 sstubs_file = f'{root_path}{folder_string}/sstubs'
 bugs_file = f'{root_path}{folder_string}/bugs'
 projects_list_file = f'{root_path}{folder_string}/topJavaMavenProjects.csv'
-file_level_path = f'{root_path}{folder_string}/{result_string}/File-level/'
-line_level_path = f'{root_path}{folder_string}/{result_string}/Line-level/'
+file_level_path = f'{root_path}{result_string}/File-level/'
+line_level_path = f'{root_path}{result_string}/Line-level/'
 dataset_project_path = f'{root_path}{dataset_string}/'
 # 定数
 PROJECTS_NUM = 100
@@ -134,8 +134,8 @@ def make_dataset( data ):
          # File列にproject_nameを追加
          #df_linelevel["File"] = project_name + "/" + df_linelevel["File"]
          
-         filelevel_csv_name = f'{project_name}_files_dataset.csv'
-         linelevel_csv_name = f'{project_name}_defective_lines_dataset.csv'
+         filelevel_csv_name = f'{repo_name}-1.0.0_files_dataset.csv'
+         linelevel_csv_name = f'{repo_name}-1.0.0_defective_lines_dataset.csv'
          save_csv(file_level_path, filelevel_csv_name, df_filelevel)
          save_csv(line_level_path, linelevel_csv_name, df_linelevel)
 
