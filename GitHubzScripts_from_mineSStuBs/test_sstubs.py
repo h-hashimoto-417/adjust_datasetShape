@@ -2,6 +2,7 @@ import os
 import sys
 import pandas as pd
 import json
+import csv
 from git import Repo
 
 # path
@@ -9,16 +10,24 @@ from git import Repo
 root_path = r'/Users/hashimoto/Githubrepo/'
 folder_string = 'adjust_dataset'
 dataset_string = 'Dataset_project'
-result_string = 'Adjusted_Dataset'
+result_string = 'Dataset'
+
 
 sstubs_file = f'{root_path}{folder_string}/sstubs'
 bugs_file = f'{root_path}{folder_string}/bugs.json'
 dataset_project_path = f'{root_path}{dataset_string}/'
+dataset_csv_path = f'{root_path}{result_string}/File-level/'
 
 def read_json_file( filename ) :
     with open(filename, 'r', encoding='utf-8') as f:
         data = json.load(f)
     return data
+
+def read_csv_file( filename ) :
+    with open(filename, 'r', encoding='utf-8') as f:
+        data = csv.load(f)
+    return data
+
 
 def get_file_content_at_commit(repo_path: str, commit_sha: str, file_path: str) -> str:
     """
@@ -37,25 +46,38 @@ def get_file_content_at_commit(repo_path: str, commit_sha: str, file_path: str) 
     # blob.data_stream.read() は bytes なので decode する
     return blob.data_stream.read().decode("utf-8")
 
-sstubs = read_json_file(sstubs_file)
-df = pd.DataFrame(sstubs)
-#print(df[df["projectName"] == "Activiti.Activiti"])
+# sstubs = read_json_file(sstubs_file)
+# df = pd.DataFrame(sstubs)
+# #print(df[df["projectName"] == "Activiti.Activiti"])
 
-repo_name = "Activiti.Activiti"
-project_name = "Activiti"
-# project_nameに対応するデータを抽出
-df_project = df[df["projectName"] == repo_name].copy()
-# df_projectが空の場合はスキップ
-if df_project.empty:
-    print(f'Warning: No data for project {repo_name}. Skipping.')
+# repo_name = "Activiti.Activiti"
+# project_name = "Activiti"
+# # project_nameに対応するデータを抽出
+# df_project = df[df["projectName"] == repo_name].copy()
+# # df_projectが空の場合はスキップ
+# if df_project.empty:
+#     print(f'Warning: No data for project {repo_name}. Skipping.')
 
-# それぞれのファイルのSRCを取得
-for index,row in df_project.iterrows():
-    commit_sha = row["fixCommitParentSHA1"]
-    file_path = row["bugFilePath"]
-    try:
-        src_content = get_file_content_at_commit(f'{dataset_project_path}{repo_name}', commit_sha, file_path)
-        print(src_content)
-    except Exception as e:
-        print(f'Error retrieving file content for {file_path} at commit {commit_sha}: {e}')
-        src_content = ""
+# # それぞれのファイルのSRCを取得
+# for index,row in df_project.iterrows():
+#     commit_sha = row["fixCommitParentSHA1"]
+#     file_path = row["bugFilePath"]
+#     try:
+#         src_content = get_file_content_at_commit(f'{dataset_project_path}{repo_name}', commit_sha, file_path)
+#         print(src_content)
+#     except Exception as e:
+#         print(f'Error retrieving file content for {file_path} at commit {commit_sha}: {e}')
+#         src_content = ""
+        
+ 
+def main():
+    repo_name = "Activiti.Activiti"
+    data = read_csv_file(f'{dataset_csv_path}{repo_name}-1.0.0_files_dataset.csv')
+    df = pd.DataFrame(data)
+    if df["SRC"][12] == df["SRC"][78]:
+        print("same")
+    else:
+        print("different")
+        
+if __name__ == "__main__":
+    main()
