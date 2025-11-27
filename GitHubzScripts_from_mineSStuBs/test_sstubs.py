@@ -4,6 +4,7 @@ import pandas as pd
 import json
 import csv
 from git import Repo
+import difflib
 
 # path
 #root_path = r'C:/Users/hitom/GitHubrepo/'
@@ -25,8 +26,8 @@ def read_json_file( filename ) :
 
 def read_csv_file( filename ) :
     with open(filename, 'r', encoding='utf-8') as f:
-        data = csv.load(f)
-    return data
+        df = pd.read_csv(filename, index_col=False)
+    return df
 
 
 def get_file_content_at_commit(repo_path: str, commit_sha: str, file_path: str) -> str:
@@ -74,10 +75,28 @@ def main():
     repo_name = "Activiti.Activiti"
     data = read_csv_file(f'{dataset_csv_path}{repo_name}-1.0.0_files_dataset.csv')
     df = pd.DataFrame(data)
-    if df["SRC"][12] == df["SRC"][78]:
-        print("same")
+    # 比較対象の文字列を取得
+    text1 = df["SRC"].iloc[11] # .iloc[12] はインデックス番号12（13行目）を確実に取得
+    text2 = df["SRC"].iloc[12] # .iloc[14] はインデックス番号14（15行目）を確実に取得
+
+    if text1 == text2:
+        print("same: 2つのSRCの内容は一言一句まで完全に一致しています。")
     else:
-        print("different")
+        print("different: 2つのSRCの内容は異なっています。")
+        print("--- 差分の詳細 ---")
         
+        # difflib.ndiff() を使用して差分を生成
+        # 文字列を改行で区切ってリストに変換してから渡す（行単位の差分が分かりやすい）
+        diff_generator = difflib.ndiff(text1.splitlines(), text2.splitlines())
+        
+        # 差分を表示
+        for line in diff_generator:
+            # '+ ' はtext2にのみ存在する行
+            # '- ' はtext1にのみ存在する行
+            # '? ' は変更があった行
+            # '  ' は一致している行
+            if line.startswith('+ ') or line.startswith('- ') or line.startswith('? '):
+                print(line)
+        print("----------------------")
 if __name__ == "__main__":
     main()
