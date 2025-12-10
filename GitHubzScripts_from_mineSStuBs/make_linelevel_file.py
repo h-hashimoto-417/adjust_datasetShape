@@ -109,7 +109,7 @@ def make_dataset( data ):
 
          ###### file-levelデータ作成 ######
          # 必要な列のみ抽出、列名変更
-         df_filelevel = df_project[["bugFilePath", "bugType"]].copy()
+         df_filelevel = df_project[["bugFilePath"]].copy()
          df_filelevel = df_filelevel.rename(columns={"bugFilePath": "File"})
          # File列にproject_nameを追加
          #df_filelevel["File"] = project_name + "/" + df_filelevel["File"]
