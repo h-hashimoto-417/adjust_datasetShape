@@ -117,6 +117,9 @@ def make_dataset( data ):
          df_filelevel.insert(df_filelevel.columns.get_loc("File") + 1, "Bug", True)
          # それぞれのファイルのSRCを取得
          df_filelevel.insert(df_filelevel.columns.get_loc("Bug") + 1, "SRC", "")
+         indexes_to_drop = []
+         release_indices = {}
+         df_releases = {}
          for index,row in df_project.iterrows():
              commit_sha = row["fixCommitParentSHA1"]
              file_path = row["bugFilePath"]
@@ -125,7 +128,29 @@ def make_dataset( data ):
              except Exception as e:
                  print(f'Error retrieving file content for {file_path} at commit {commit_sha}: {e}')
                  src_content = ""
-             df_filelevel.iloc[index, df_filelevel.columns.get_loc("SRC")] = src_content
+             
+             existing_file = df_project[(df_project["bugFilePath"] == file_path) & (df_project["SRC"] != "")]
+             if existing_file.empty:
+                 df_filelevel.iloc[index, df_filelevel.columns.get_loc("SRC")] = src_content
+             else:
+                 if existing_file.iloc[0]["SRC"] == src_content:
+                    # 既に同じファイルパスでSRCが存在する場合、その行は削除対象とする
+                    indexes_to_drop.append(index)
+                 else:
+                    df_file = row.copy()
+                    df_file["SRC"] = src_content                    
+                    # リリースごとにインデックスを振り分けて管理
+                    if  file_path not in release_indices.key():
+                        release_indices[file_path] = 2
+                    else:
+                        release_indices[file_path] += 1
+                    if release_indices[file_path] not in df_releases.key():
+                        df_releases[release_indices[file_path]] = df_file
+                        df_releases[release_indices[file_path]][0]["SRC"] = src_content
+                    else:
+                        df_releases[release_indices[file_path]].append(row.copy())
+                        
+         df_project = df_project.drop(indexes_to_drop)
 
          ###### line-levelデータ作成 ######
          # 必要な列のみ抽出、列名変更
