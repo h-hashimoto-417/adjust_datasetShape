@@ -118,7 +118,7 @@ def make_dataset( data ):
          # それぞれのファイルのSRCを取得
          df_filelevel.insert(df_filelevel.columns.get_loc("Bug") + 1, "SRC", "")
          indexes_to_drop = []
-         release_indices = {}
+         release_on_file = {}
          df_filelevel_releases = {}
          for index,row in df_project.iterrows():
              commit_sha = row["fixCommitParentSHA1"]
@@ -140,14 +140,14 @@ def make_dataset( data ):
                     df_file = df_filelevel.iloc[[index]].copy()
                     df_file["SRC"] = src_content                    
                     # リリースごとにインデックスを振り分けて管理
-                    if  file_path not in release_indices.key():
-                        release_indices[file_path] = 2
+                    if  file_path not in release_on_file.key():
+                        release_on_file[file_path] = 2
                     else:
-                        release_indices[file_path] += 1
-                    if release_indices[file_path] not in df_filelevel_releases.key():
-                        df_filelevel_releases[release_indices[file_path]] = df_file
+                        release_on_file[file_path] += 1
+                    if release_on_file[file_path] not in df_filelevel_releases.key():
+                        df_filelevel_releases[release_on_file[file_path]] = df_file
                     else:
-                        df_filelevel_releases[release_indices[file_path]] = pd.concat([df_filelevel_releases[release_indices[file_path]], df_file], ignore_index=True)
+                        df_filelevel_releases[release_on_file[file_path]] = pd.concat([df_filelevel_releases[release_on_file[file_path]], df_file], ignore_index=True)
                         
          df_project = df_project.drop(indexes_to_drop)
 
