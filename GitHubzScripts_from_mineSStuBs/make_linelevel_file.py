@@ -130,7 +130,7 @@ def make_dataset( data ):
                  print(f'Error retrieving file content for {file_path} at commit {commit_sha}: {e}')
                  src_content = ""
              
-             existing_file = df_project[(df_project["bugFilePath"] == file_path) & (df_project["SRC"] != "")]
+             existing_file = df_filelevel[(df_filelevel["File"] == file_path) & (df_filelevel["SRC"] != "")]
              if existing_file.empty:
                  df_filelevel.loc[index, "SRC"] = src_content
                  releases_indices[1].append(index)
@@ -154,12 +154,18 @@ def make_dataset( data ):
                         df_filelevel_releases[release_on_file[file_path]] = pd.concat([df_filelevel_releases[release_on_file[file_path]], df_file], ignore_index=True)
                         releases_indices[release_on_file[file_path]].append(index)
                         
-         df_project = df_project.drop(indexes_to_drop)
+         df_filelevel = df_filelevel.drop(indexes_to_drop)
 
          ###### line-levelデータ作成 ######
          # 必要な列のみ抽出、列名変更
          df_linelevel = df_project[["bugFilePath", "bugLineNum", "sourceBeforeFix", "bugType"]].copy()
-         df_linelevel = df_linelevel.rename(columns={"bugFilePath": "File", "bugLineNum": "Line_number", "sourceBeforeFix": "SRC"})
+         df_linelevel = df_linelevel.rename(columns={"bugFilePath": "File", "bugLineNum": "Line_number", "sourceBeforeFix": "SRC"})         
+         df_linelevel_releases = {}
+         for release_num, indices in releases_indices.items():
+             if release_num == 1:
+                continue
+             df_linelevel_releases[release_num] = df_linelevel[indices]
+         df_linelevel = df_linelevel[releases_indices[1]]
          # File列にproject_nameを追加
          #df_linelevel["File"] = project_name + "/" + df_linelevel["File"]
          
@@ -173,7 +179,7 @@ def make_dataset( data ):
                 filelevel_csv_name_release = f'{project_name}-{release_num}.0.0_files_dataset.csv'
                 linelevel_csv_name_release = f'{project_name}-{release_num}.0.0_defective_lines_dataset.csv'
                 save_csv(file_level_path, filelevel_csv_name_release, df_release)
-                save_csv(line_level_path, linelevel_csv_name_release, df_linelevel)
+                save_csv(line_level_path, linelevel_csv_name_release, df_linelevel_releases[release_num])
 
          if os.path.isfile(f'{file_level_path}{filelevel_csv_name}') and os.path.isfile(f'{line_level_path}{linelevel_csv_name}'):
             global projects_yielded
