@@ -134,26 +134,22 @@ def make_dataset( data ):
              if existing_file.empty:
                  df_filelevel.loc[index, "SRC"] = src_content
                  releases_indices[1].append(index)
+             elif (existing_file["SRC"] == src_content).any():
+                # 既に同じファイルパスで同じSRCが存在する場合、その行は削除対象とする
+                indexes_to_drop.append(index)
+                releases_indices[1].append(index)
              else:
-                 if existing_file.iloc[0]["SRC"] == src_content:
-                    # 既に同じファイルパスでSRCが存在する場合、その行は削除対象とする
-                    indexes_to_drop.append(index)
-                    releases_indices[1].append(index)
-                 else:
-                    df_file = df_filelevel.iloc[[index]].copy()
-                    df_file["SRC"] = src_content                    
-                    # リリースごとにインデックスを振り分けて管理
-                    if  file_path not in release_on_file.key():
-                        release_on_file[file_path] = 2
-                    else:
-                        release_on_file[file_path] += 1
-                    if release_on_file[file_path] not in df_filelevel_releases.key():
-                        df_filelevel_releases[release_on_file[file_path]] = df_file
-                        releases_indices[release_on_file[file_path]] = [index]
-                    else:
-                        df_filelevel_releases[release_on_file[file_path]] = pd.concat([df_filelevel_releases[release_on_file[file_path]], df_file], ignore_index=True)
-                        releases_indices[release_on_file[file_path]].append(index)
-                        
+                df_filelevel.loc[index, "SRC"] = src_content                   
+                # リリースごとにインデックスを振り分けて管理
+                if  file_path not in release_on_file.keys():
+                    release_on_file[file_path] = 2
+                else:
+                    release_on_file[file_path] += 1
+                if release_on_file[file_path] not in releases_indices.keys():
+                    releases_indices[release_on_file[file_path]] = [index]
+                else:
+                    releases_indices[release_on_file[file_path]].append(index)
+                            
          df_filelevel = df_filelevel.drop(indexes_to_drop)
 
          ###### line-levelデータ作成 ######
