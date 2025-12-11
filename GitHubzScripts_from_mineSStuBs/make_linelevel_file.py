@@ -119,7 +119,7 @@ def make_dataset( data ):
          df_filelevel.insert(df_filelevel.columns.get_loc("Bug") + 1, "SRC", "")
          indexes_to_drop = []
          release_indices = {}
-         df_releases = {}
+         df_filelevel_releases = {}
          for index,row in df_project.iterrows():
              commit_sha = row["fixCommitParentSHA1"]
              file_path = row["bugFilePath"]
@@ -144,10 +144,10 @@ def make_dataset( data ):
                         release_indices[file_path] = 2
                     else:
                         release_indices[file_path] += 1
-                    if release_indices[file_path] not in df_releases.key():
-                        df_releases[release_indices[file_path]] = df_file
+                    if release_indices[file_path] not in df_filelevel_releases.key():
+                        df_filelevel_releases[release_indices[file_path]] = df_file
                     else:
-                        df_releases[release_indices[file_path]] = pd.concat([df_releases[release_indices[file_path]], df_file], ignore_index=True)
+                        df_filelevel_releases[release_indices[file_path]] = pd.concat([df_filelevel_releases[release_indices[file_path]], df_file], ignore_index=True)
                         
          df_project = df_project.drop(indexes_to_drop)
 
@@ -162,6 +162,13 @@ def make_dataset( data ):
          linelevel_csv_name = f'{project_name}-1.0.0_defective_lines_dataset.csv'
          save_csv(file_level_path, filelevel_csv_name, df_filelevel)
          save_csv(line_level_path, linelevel_csv_name, df_linelevel)
+         
+         if df_filelevel_releases.empty is False:
+            for release_num, df_release in df_filelevel_releases.items():
+                filelevel_csv_name_release = f'{project_name}-{release_num}.0.0_files_dataset.csv'
+                linelevel_csv_name_release = f'{project_name}-{release_num}.0.0_defective_lines_dataset.csv'
+                save_csv(file_level_path, filelevel_csv_name_release, df_release)
+                save_csv(line_level_path, linelevel_csv_name_release, df_linelevel)
 
          if os.path.isfile(f'{file_level_path}{filelevel_csv_name}') and os.path.isfile(f'{line_level_path}{linelevel_csv_name}'):
             global projects_yielded
