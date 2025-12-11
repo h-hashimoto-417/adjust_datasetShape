@@ -137,7 +137,7 @@ def make_dataset( data ):
                     # 既に同じファイルパスでSRCが存在する場合、その行は削除対象とする
                     indexes_to_drop.append(index)
                  else:
-                    df_file = row.copy()
+                    df_file = df_filelevel.iloc[[index]].copy()
                     df_file["SRC"] = src_content                    
                     # リリースごとにインデックスを振り分けて管理
                     if  file_path not in release_indices.key():
@@ -146,9 +146,8 @@ def make_dataset( data ):
                         release_indices[file_path] += 1
                     if release_indices[file_path] not in df_releases.key():
                         df_releases[release_indices[file_path]] = df_file
-                        df_releases[release_indices[file_path]][0]["SRC"] = src_content
                     else:
-                        df_releases[release_indices[file_path]].append(row.copy())
+                        df_releases[release_indices[file_path]] = pd.concat([df_releases[release_indices[file_path]], df_file], ignore_index=True)
                         
          df_project = df_project.drop(indexes_to_drop)
 
