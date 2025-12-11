@@ -17,8 +17,8 @@ result_string = 'Adjusted_Dataset'
 sstubs_file = f'{root_path}{folder_string}/sstubs'
 bugs_file = f'{root_path}{folder_string}/bugs'
 projects_list_file = f'{root_path}{folder_string}/topJavaMavenProjects.csv'
-file_level_path = f'{root_path}{folder_string}{result_string}/File-level/'
-line_level_path = f'{root_path}{folder_string}{result_string}/Line-level/'
+file_level_path = f'{root_path}{folder_string}/{result_string}/File-level/'
+line_level_path = f'{root_path}{folder_string}/{result_string}/Line-level/'
 dataset_project_path = f'{root_path}{dataset_string}/'
 # 定数
 PROJECTS_NUM = 100
@@ -131,7 +131,7 @@ def make_dataset( data ):
              
              existing_file = df_project[(df_project["bugFilePath"] == file_path) & (df_project["SRC"] != "")]
              if existing_file.empty:
-                 df_filelevel.iloc[index, df_filelevel.columns.get_loc("SRC")] = src_content
+                 df_filelevel.loc[index, "SRC"] = src_content
              else:
                  if existing_file.iloc[0]["SRC"] == src_content:
                     # 既に同じファイルパスでSRCが存在する場合、その行は削除対象とする
@@ -158,8 +158,8 @@ def make_dataset( data ):
          # File列にproject_nameを追加
          #df_linelevel["File"] = project_name + "/" + df_linelevel["File"]
          
-         filelevel_csv_name = f'{project_name}_files_dataset.csv'
-         linelevel_csv_name = f'{project_name}_defective_lines_dataset.csv'
+         filelevel_csv_name = f'{project_name}-1.0.0_files_dataset.csv'
+         linelevel_csv_name = f'{project_name}-1.0.0_defective_lines_dataset.csv'
          save_csv(file_level_path, filelevel_csv_name, df_filelevel)
          save_csv(line_level_path, linelevel_csv_name, df_linelevel)
 
