@@ -159,11 +159,8 @@ def make_dataset( data ):
          df_linelevel = df_project[["bugFilePath", "bugLineNum", "sourceBeforeFix", "bugType"]].copy()
          df_linelevel = df_linelevel.rename(columns={"bugFilePath": "File", "bugLineNum": "Line_number", "sourceBeforeFix": "SRC"})         
          df_linelevel_releases = {}
-         for release_num, indices in releases_indices.items():
-             if release_num == 1:
-                continue
+         for release_num, indices in releases_indices.items():             
              df_linelevel_releases[release_num] = df_linelevel[indices]
-         df_linelevel = df_linelevel[releases_indices[1]]
          # File列にproject_nameを追加
          #df_linelevel["File"] = project_name + "/" + df_linelevel["File"]
          
