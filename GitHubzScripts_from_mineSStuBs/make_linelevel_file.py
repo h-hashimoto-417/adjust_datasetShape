@@ -151,8 +151,11 @@ def make_dataset( data ):
                     releases_indices[release_on_file[file_path]] = [index]
                 else:
                     releases_indices[release_on_file[file_path]].append(index)
-                            
-         df_filelevel = df_filelevel.drop(indexes_to_drop)
+           
+         for release_num, indices in releases_indices.items():
+             df_filelevel_releases[release_num] = df_filelevel.loc[
+                 (df_filelevel.index.isin(indices)) & (~df_filelevel.index.isin(indexes_to_drop))
+             ]
 
          ###### line-levelデータ作成 ######
          # 必要な列のみ抽出、列名変更
@@ -160,7 +163,7 @@ def make_dataset( data ):
          df_linelevel = df_linelevel.rename(columns={"bugFilePath": "File", "bugLineNum": "Line_number", "sourceBeforeFix": "SRC"})         
          df_linelevel_releases = {}
          for release_num, indices in releases_indices.items():             
-             df_linelevel_releases[release_num] = df_linelevel[indices]
+             df_linelevel_releases[release_num] = df_linelevel.loc[indices]
          # File列にproject_nameを追加
          #df_linelevel["File"] = project_name + "/" + df_linelevel["File"]
          
