@@ -172,7 +172,7 @@ def make_dataset( data ):
         #  save_csv(file_level_path, filelevel_csv_name, df_filelevel)
         #  save_csv(line_level_path, linelevel_csv_name, df_linelevel)
          
-         if df_filelevel_releases.empty is False:
+         if df_filelevel_releases:
             for release_num, df_release in df_filelevel_releases.items():
                 filelevel_csv_name_release = f'{project_name}-{release_num}.0.0_files_dataset.csv'
                 linelevel_csv_name_release = f'{project_name}-{release_num}.0.0_defective_lines_dataset.csv'
