@@ -135,9 +135,11 @@ def make_dataset( data ):
                  df_filelevel.loc[index, "SRC"] = src_content
                  releases_indices[1].append(index)
              elif (existing_file["SRC"] == src_content).any():
+                samefile_index = existing_file[existing_file["SRC"] == src_content].index[0]
+                key = next((k for k, v in releases_indices.items() if samefile_index in v), None)
                 # 既に同じファイルパスで同じSRCが存在する場合、その行は削除対象とする
                 indexes_to_drop.append(index)
-                releases_indices[1].append(index)
+                releases_indices[key].append(index) # 同じリリースに追加
              else:
                 df_filelevel.loc[index, "SRC"] = src_content                   
                 # リリースごとにインデックスを振り分けて管理
