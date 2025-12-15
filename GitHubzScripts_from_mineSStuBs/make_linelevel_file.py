@@ -174,8 +174,8 @@ def make_dataset( data ):
          
          if df_filelevel_releases:
             for release_num, df_release in df_filelevel_releases.items():
-                filelevel_csv_name_release = f'{project_name}-{release_num}.0.0_files_dataset.csv'
-                linelevel_csv_name_release = f'{project_name}-{release_num}.0.0_defective_lines_dataset.csv'
+                filelevel_csv_name_release = f'{repo_name}-{release_num}.0.0_files_dataset.csv'
+                linelevel_csv_name_release = f'{repo_name}-{release_num}.0.0_defective_lines_dataset.csv'
                 save_csv(file_level_path, filelevel_csv_name_release, df_release)
                 save_csv(line_level_path, linelevel_csv_name_release, df_linelevel_releases[release_num])
 
