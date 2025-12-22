@@ -167,8 +167,8 @@ def make_dataset( data ):
          # File列にproject_nameを追加
          #df_linelevel["File"] = project_name + "/" + df_linelevel["File"]
          
-         filelevel_csv_name = f'{project_name}-1.0.0_files_dataset.csv'
-         linelevel_csv_name = f'{project_name}-1.0.0_defective_lines_dataset.csv'
+         filelevel_csv_name = f'{repo_name}-1.0.0_files_dataset.csv'
+         linelevel_csv_name = f'{repo_name}-1.0.0_defective_lines_dataset.csv'
         #  save_csv(file_level_path, filelevel_csv_name, df_filelevel)
         #  save_csv(line_level_path, linelevel_csv_name, df_linelevel)
          
