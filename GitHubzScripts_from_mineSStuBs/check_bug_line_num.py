@@ -120,7 +120,7 @@ def get_modified_lines_for_file(commit_hash, file_path):
     modified_lines = []
 
     # @@ -a,b +c,d @@ を解析
-    hunk_header = re.compile(r"@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@")
+    hunk_header = re.compile(r"@@ -(\d+)(?:,(\d+))? \+\d+(?:,\d+)? @@")
 
     for line in result.stdout.splitlines():
         m = hunk_header.search(line)
