@@ -179,4 +179,12 @@ def check_bug_line_num(data):
         else:
             print(f'All bug line numbers matched for project {repo_name}.')
             
-    
+
+def main():    
+    # jsonデータの読み込み
+    jsondata = read_json_file(sstubs_file)
+
+    check_bug_line_num(jsondata)
+
+if __name__ == "__main__":
+    main()    
