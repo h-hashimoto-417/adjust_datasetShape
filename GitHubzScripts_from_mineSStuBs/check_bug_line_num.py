@@ -175,5 +175,8 @@ def check_bug_line_num(data):
         if not df_diff.empty:
             check_line_num_file = f'{repo_name}-diff_bug_linenum.csv'
             save_csv(check_line_num_file_path, check_line_num_file, df_diff)
+            print(f'{repo_name} line number were mismatched.')
+        else:
+            print(f'All bug line numbers matched for project {repo_name}.')
             
     
