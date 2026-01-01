@@ -165,7 +165,7 @@ def check_bug_line_num(data):
             except Exception as e:
                 print(f'Error retrieving modified lines for {file_path} at commit {commit_sha}: {e}')
                 modified_lines = []
-            bug_line_num = row["bugLineNum"]
+            bug_line_num = int(row["bugLineNum"])
             if bug_line_num not in modified_lines:
                 print(f'Warning: In project {repo_name}, for file {file_path} at commit {commit_sha}, bug line number {bug_line_num} not found in modified lines {modified_lines}.')
                 diff_linenum_bugs.append(index)
