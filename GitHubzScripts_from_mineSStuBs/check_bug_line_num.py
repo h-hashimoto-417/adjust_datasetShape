@@ -93,11 +93,12 @@ def get_file_content_at_commit(repo_path: str, commit_sha: str, file_path: str) 
     return blob.data_stream.read().decode("utf-8")
 
 
-def get_modified_lines_for_file(commit_hash, file_path):
+def get_modified_lines_for_file(repo_path, commit_hash, file_path):
     """
     指定コミット・指定ファイルで修正された
     「修正前ファイルの行番号」を返す
 
+    :param repo_path: ローカルにクローンした Git リポジトリのパス
     :param commit_hash: コミットハッシュ
     :param file_path: リポジトリルートからの相対パス
     :return: 修正行番号の list[int]
@@ -113,6 +114,7 @@ def get_modified_lines_for_file(commit_hash, file_path):
 
     result = subprocess.run(
         cmd,
+        cwd=repo_path,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
@@ -159,7 +161,7 @@ def check_bug_line_num(data):
             commit_sha = row["fixCommitSHA1"]
             file_path = row["bugFilePath"]            
             try:
-                modified_lines = get_modified_lines_for_file(commit_sha, file_path)
+                modified_lines = get_modified_lines_for_file(f'{dataset_project_path}{repo_name}', commit_sha, file_path)
             except Exception as e:
                 print(f'Error retrieving modified lines for {file_path} at commit {commit_sha}: {e}')
                 modified_lines = []
