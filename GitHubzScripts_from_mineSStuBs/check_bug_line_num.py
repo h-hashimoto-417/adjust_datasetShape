@@ -21,6 +21,8 @@ file_level_path = f'{root_path}{folder_string}/{result_string}/File-level/'
 line_level_path = f'{root_path}{folder_string}/{result_string}/Line-level/'
 dataset_project_path = f'{root_path}{dataset_string}/'
 
+check_line_num_file_path = f'{root_path}{folder_string}/{result_string}/'
+
 # 定数
 PROJECTS_NUM = 100
 # global 変数
@@ -154,7 +156,7 @@ def check_bug_line_num(data):
         
         diff_linenum_bugs = []
         for index,row in df_project.iterrows():
-            commit_sha = row["fixCommitParentSHA1"]
+            commit_sha = row["fixCommitSHA1"]
             file_path = row["bugFilePath"]            
             try:
                 modified_lines = get_modified_lines_for_file(commit_sha, file_path)
@@ -165,4 +167,11 @@ def check_bug_line_num(data):
             if bug_line_num not in modified_lines:
                 print(f'Warning: In project {repo_name}, for file {file_path} at commit {commit_sha}, bug line number {bug_line_num} not found in modified lines {modified_lines}.')
                 diff_linenum_bugs.append(index)
+        
+        df_diff = df_project.loc[diff_linenum_bugs].copy()
+        df_diff = df_diff[["projectName", "bugFilePath", "fixCommitSHA1", "bugLineNum"]]
+        if not df_diff.empty:
+            check_line_num_file = f'{repo_name}-diff_bug_linenum.csv'
+            save_csv(check_line_num_file_path, check_line_num_file, df_diff)
+            
     
