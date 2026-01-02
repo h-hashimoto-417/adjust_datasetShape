@@ -24,7 +24,7 @@ dataset_project_path = f'{root_path}{dataset_string}/'
 check_line_num_file_path = f'{root_path}{folder_string}/{result_string}/'
 
 # 定数
-PROJECTS_NUM = 100
+PROJECTS_NUM = 3
 # global 変数
 projects_yielded = 0
 
@@ -178,6 +178,9 @@ def check_bug_line_num(data):
             print(f'{repo_name} line number were mismatched.')
         else:
             print(f'All bug line numbers matched for project {repo_name}.')
+        
+        global projects_yielded
+        projects_yielded += 1
             
 
 def main():    
