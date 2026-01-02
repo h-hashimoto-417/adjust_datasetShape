@@ -173,7 +173,7 @@ def check_bug_line_num(data):
                 diff_linenum_bugs.append(index)
         
         df_diff = df_project.loc[diff_linenum_bugs].copy()
-        df_diff = df_diff[["projectName", "bugFilePath", "fixCommitSHA1", "bugLineNum"]]
+        df_diff = df_diff[["projectName", "bugFilePath", "fixCommitSHA1", "bugLineNum", "bugType"]]
         if not df_diff.empty:
             check_line_num_file = f'{repo_name}-diff_bug_linenum.csv'
             save_csv(check_line_num_file_path, check_line_num_file, df_diff)
