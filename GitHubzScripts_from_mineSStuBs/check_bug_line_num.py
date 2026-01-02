@@ -105,6 +105,8 @@ def get_modified_lines_for_file(repo_path, commit_hash, file_path):
     """
     cmd = [
         "git",
+        "-C",
+        repo_path,
         "show",
         commit_hash,
         "-U0",
@@ -114,7 +116,7 @@ def get_modified_lines_for_file(repo_path, commit_hash, file_path):
 
     result = subprocess.run(
         cmd,
-        cwd=repo_path,
+        
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
