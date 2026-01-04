@@ -235,13 +235,33 @@ def check_bug_line_num(data):
         df_diff = df_diff[["projectName", "bugFilePath", "fixCommitSHA1", "bugLineNum", "bugType"]]
         df_merge_commit = df_project.loc[merge_commit_bugs].copy()
         df_merge_commit = df_merge_commit[["projectName", "bugFilePath", "fixCommitSHA1", "bugLineNum", "bugType"]]
+        df_merge_commit.insert(df_merge_commit.columns.get_loc("bugType") + 1, "exsitSameBugcommit", False)
+        for index, row in df_merge_commit.iterrows():
+            bug_file = row["bugFilePath"]
+            bug_line = row["bugLineNum"]
+            bug_commit = row["fixCommitSHA1"]
+            # 同じファイル・行番号で、マージコミットでないバグ修正コミットが存在するか確認
+            same_bugs = df_project[
+                (df_project["bugFilePath"] == bug_file) &
+                (df_project["bugLineNum"] == bug_line) &
+                (df_project["fixCommitSHA1"] != bug_commit)
+            ]
+            has_non_merge = False
+            for _, sb_row in same_bugs.iterrows():
+                sb_commit = sb_row["fixCommitSHA1"]
+                if not is_merge_commit(f'{dataset_project_path}{repo_name}', sb_commit):
+                    has_non_merge = True
+                    break
+            if has_non_merge:
+                df_merge_commit.at[index, "exsitSameBugcommit"] = True
+                
         if not df_merge_commit.empty:
             merge_commit_file = f'{repo_name}-merge_commit_bugs.csv'
             save_csv(check_line_num_file_path, merge_commit_file, df_merge_commit)
             print(f'{repo_name} has merge commit bugs skipped.')
         if not df_diff.empty:
             check_line_num_file = f'{repo_name}-diff_bug_linenum.csv'
-            save_csv(check_line_num_file_path, check_line_num_file, df_diff)
+            #save_csv(check_line_num_file_path, check_line_num_file, df_diff)
             print(f'{repo_name} line number were mismatched.')
         else:
             print(f'All bug line numbers matched for project {repo_name}.')
