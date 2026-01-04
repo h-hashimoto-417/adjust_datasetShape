@@ -24,7 +24,7 @@ dataset_project_path = f'{root_path}{dataset_string}/'
 check_line_num_file_path = f'{root_path}{folder_string}/{result_string}/'
 
 # 定数
-PROJECTS_NUM = 3
+PROJECTS_NUM = 100
 # global 変数
 projects_yielded = 0
 
@@ -185,12 +185,14 @@ def check_bug_line_num(data):
             continue
         
         diff_linenum_bugs = []
+        merge_commit_bugs = []
         for index,row in df_project.iterrows():
             commit_sha = row["fixCommitSHA1"]
             file_path = row["bugFilePath"]
             is_merge = is_merge_commit(f'{dataset_project_path}{repo_name}', commit_sha)
             if is_merge:
                 #print(f'Warning: Skipping merge commit {commit_sha} for project {repo_name}.')
+                merge_commit_bugs.append(index)
                 continue
             try:
                 modified_lines = get_modified_lines_for_file(f'{dataset_project_path}{repo_name}', commit_sha, file_path)
@@ -204,6 +206,12 @@ def check_bug_line_num(data):
         
         df_diff = df_project.loc[diff_linenum_bugs].copy()
         df_diff = df_diff[["projectName", "bugFilePath", "fixCommitSHA1", "bugLineNum", "bugType"]]
+        df_merge_commit = df_project.loc[merge_commit_bugs].copy()
+        df_merge_commit = df_merge_commit[["projectName", "bugFilePath", "fixCommitSHA1", "bugLineNum", "bugType"]]
+        if not df_merge_commit.empty:
+            merge_commit_file = f'{repo_name}-merge_commit_bugs.csv'
+            save_csv(check_line_num_file_path, merge_commit_file, df_merge_commit)
+            print(f'{repo_name} has merge commit bugs skipped.')
         if not df_diff.empty:
             check_line_num_file = f'{repo_name}-diff_bug_linenum.csv'
             save_csv(check_line_num_file_path, check_line_num_file, df_diff)
