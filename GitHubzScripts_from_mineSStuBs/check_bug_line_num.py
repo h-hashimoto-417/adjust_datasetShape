@@ -145,6 +145,32 @@ def get_modified_lines_for_file(repo_path, commit_hash, file_path):
     return modified_lines
 
 
+def is_merge_commit(repo_path, commit_hash):
+    cmd = [
+        "git",
+        "-C",
+        repo_path,
+        "rev-list",
+        "--parents",
+        "-n",
+        "1",
+        commit_hash,
+    ]
+
+    result = subprocess.run(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=True,
+    )
+
+    parts = result.stdout.strip().split()
+    # parts[0] が commit、自分以外が親
+    return len(parts) > 2
+
+
+
 def check_bug_line_num(data):
     df = pd.DataFrame(data)
     for project_url in project_url_generator( projects_list_file, PROJECTS_NUM ):
@@ -161,7 +187,11 @@ def check_bug_line_num(data):
         diff_linenum_bugs = []
         for index,row in df_project.iterrows():
             commit_sha = row["fixCommitSHA1"]
-            file_path = row["bugFilePath"]            
+            file_path = row["bugFilePath"]
+            is_merge = is_merge_commit(f'{dataset_project_path}{repo_name}', commit_sha)
+            if is_merge:
+                #print(f'Warning: Skipping merge commit {commit_sha} for project {repo_name}.')
+                continue
             try:
                 modified_lines = get_modified_lines_for_file(f'{dataset_project_path}{repo_name}', commit_sha, file_path)
             except Exception as e:
