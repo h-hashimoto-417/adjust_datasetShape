@@ -29,25 +29,25 @@ projects_yielded = 0
 # 使用しないプロジェクト
 skipped_projects = [
     'zxing.zxing', # no bugs
-    'JakeWharton.ViewPagerIndicator',
-    'liaohuqiu.android-Ultra-Pull-To-Refresh',
-    'spring-projects.spring-mvc-showcase',
-    'spring-projects.spring-petclinic',
-    'jersey.jersey',
-    'MyCATApache.Mycat-Server',
-    'dropwizard.metrics',
-    'square.otto',
-    'b3log.solo',
-    'JakeWharton.DiskLruCache',
-    'square.okio',
-    'checkstyle.checkstyle',
-    'databricks.learning-spark',
-    'jfinal.jfinal',
-    'dangdangdotcom.elastic',
-    'alibaba.DataX',
-    'shuzheng.zheng',
-    'essentials.Essentials',
-    'kbastani.spring-cloud-microservice-example'
+    'JakeWharton.ViewPagerIndicator', # no bugs
+    'liaohuqiu.android-Ultra-Pull-To-Refresh', # no bugs
+    'spring-projects.spring-mvc-showcase', # no bugs
+    'spring-projects.spring-petclinic', # no bugs
+    'jersey.jersey', # no commits
+    'MyCATApache.Mycat-Server', # no bugs
+    'dropwizard.metrics', # no commits
+    'square.otto', # no bugs
+    'b3log.solo', # no porject directory
+    'JakeWharton.DiskLruCache', # no bugs
+    'square.okio', # no bugs
+    'checkstyle.checkstyle', # no commits
+    'databricks.learning-spark', # no bugs
+    'jfinal.jfinal', # no bugs
+    'dangdangdotcom.elastic-job', # no bugs
+    'alibaba.DataX', # no bugs
+    'shuzheng.zheng', # no bugs
+    'essentials.Essentials', # no bugs
+    'kbastani.spring-cloud-microservice-example' # no bugs
 ]
 
 def read_json_file( filename ) :
