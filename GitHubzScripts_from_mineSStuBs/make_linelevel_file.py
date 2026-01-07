@@ -4,6 +4,7 @@ import pandas as pd
 import json
 import csv
 from git import Repo
+import subprocess
 
 
 
@@ -89,6 +90,30 @@ def get_file_content_at_commit(repo_path: str, commit_sha: str, file_path: str) 
     # blob.data_stream.read() は bytes なので decode する
     return blob.data_stream.read().decode("utf-8")
 
+def is_merge_commit(repo_path, commit_hash):
+    cmd = [
+        "git",
+        "-C",
+        repo_path,
+        "rev-list",
+        "--parents",
+        "-n",
+        "1",
+        commit_hash,
+    ]
+
+    result = subprocess.run(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=True,
+    )
+
+    parts = result.stdout.strip().split()
+    # parts[0] が commit、自分以外が親
+    return len(parts) > 2
+
 def make_dataset( data ):
     # projectごとにcsvファイルを生成
     # file_path, SRCをそれぞれ取得
@@ -124,6 +149,12 @@ def make_dataset( data ):
          for index,row in df_project.iterrows():
              commit_sha = row["fixCommitParentSHA1"]
              file_path = row["bugFilePath"]
+             is_merge = is_merge_commit(f'{dataset_project_path}{repo_name}', commit_sha)
+             if is_merge:
+                 #print(f'Warning: Skipping merge commit {commit_sha} for project {repo_name}.')
+                 # merge commitの場合はスキップ&削除
+                 indexes_to_drop.append(index)
+                 continue
              try:
                  src_content = get_file_content_at_commit(f'{dataset_project_path}{repo_name}', commit_sha, file_path)
              except Exception as e:
