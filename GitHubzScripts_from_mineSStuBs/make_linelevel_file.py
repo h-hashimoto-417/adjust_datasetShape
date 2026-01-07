@@ -26,6 +26,30 @@ PROJECTS_NUM = 100
 # global 変数
 projects_yielded = 0
 
+# 使用しないプロジェクト
+skipped_projects = [
+    'zxing.zxing', # no bugs
+    'JakeWharton.ViewPagerIndicator',
+    'liaohuqiu.android-Ultra-Pull-To-Refresh',
+    'spring-projects.spring-mvc-showcase',
+    'spring-projects.spring-petclinic',
+    'jersey.jersey',
+    'MyCATApache.Mycat-Server',
+    'dropwizard.metrics',
+    'square.otto',
+    'b3log.solo',
+    'JakeWharton.DiskLruCache',
+    'square.okio',
+    'checkstyle.checkstyle',
+    'databricks.learning-spark',
+    'jfinal.jfinal',
+    'dangdangdotcom.elastic',
+    'alibaba.DataX',
+    'shuzheng.zheng',
+    'essentials.Essentials',
+    'kbastani.spring-cloud-microservice-example'
+]
+
 def read_json_file( filename ) :
     with open(filename, 'r', encoding='utf-8') as f:
         data = json.load(f)
@@ -130,6 +154,9 @@ def make_dataset( data ):
             continue
          if os.path.isdir(f'{dataset_project_path}{repo_name}') is False:
             print(f'Warning: Project directory {dataset_project_path}{repo_name} does not exist. Skipping.')
+            continue
+         if repo_name in skipped_projects:
+            print(f'Info: Project {repo_name} is in skipped projects list. Skipping.')
             continue
 
          ###### file-levelデータ作成 ######
