@@ -67,6 +67,8 @@ def make_url_list_from_jsonfiles(  ):
         all_urls.update( urls )
         print(f'Info: {json_file} processed, {len(data)} bugs in {len(urls)} URLs found.')
     
+    ### プロジェクトごとにスコアを付けて、上位N件を抽出する ###
+    
     save_csv( f'{root_path}{folder_string}/', "TSSBJavaProjects.csv", pd.DataFrame( list(all_urls), columns=['repository_url'] ) )
     if os.path.isfile(f'{root_path}{folder_string}/TSSBJavaProjects.csv'):
         # global projects_yielded
