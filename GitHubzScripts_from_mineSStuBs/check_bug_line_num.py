@@ -257,7 +257,7 @@ def check_bug_line_num(data):
                 
         if not df_merge_commit.empty:
             merge_commit_file = f'{repo_name}-merge_commit_bugs.csv'
-            save_csv(check_line_num_file_path, merge_commit_file, df_merge_commit)
+            #save_csv(check_line_num_file_path, merge_commit_file, df_merge_commit)
             print(f'{repo_name} has merge commit bugs skipped.')
         if not df_diff.empty:
             check_line_num_file = f'{repo_name}-diff_bug_linenum.csv'
