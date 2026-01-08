@@ -65,11 +65,12 @@ def make_url_list_from_jsonfiles(  ):
         data = read_jsonl_file( json_path )
         urls = make_url_list( data )
         all_urls.update( urls )
+        print(f'Info: {json_file} processed, {len(urls)} URLs found.')
     
     save_csv( f'{root_path}{folder_string}/', "TSSBJavaProjects.csv", pd.DataFrame( list(all_urls), columns=['project_url'] ) )
     if os.path.isfile(f'{root_path}{folder_string}/TSSBJavaProjects.csv'):
-        global projects_yielded
-        projects_yielded += 1
+        # global projects_yielded
+        # projects_yielded += 1
         print(f'Success: TSSBJavaProjects.csv created.')
         print(f'  Total {len(all_urls)} project URLs saved.')
     else:
