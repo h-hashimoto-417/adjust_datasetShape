@@ -5,7 +5,7 @@ import json
 import csv
 from git import Repo
 import subprocess
-
+import re
 
 
 # path
@@ -138,6 +138,57 @@ def is_merge_commit(repo_path, commit_hash):
     # parts[0] が commit、自分以外が親
     return len(parts) > 2
 
+def get_modified_lines_for_file(repo_path, commit_hash, file_path):
+    """
+    指定コミット・指定ファイルで修正された
+    「修正前ファイルの行番号」を返す
+
+    :param repo_path: ローカルにクローンした Git リポジトリのパス
+    :param commit_hash: コミットハッシュ
+    :param file_path: リポジトリルートからの相対パス
+    :return: 修正行番号の list[int]
+    """
+    cmd = [
+        "git",
+        "-C",
+        repo_path,
+        "show",
+        commit_hash,
+        "-U0",
+        "--",
+        file_path,
+    ]
+
+    result = subprocess.run(
+        cmd,
+        
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=True,
+    )
+
+    modified_lines = []
+
+    # @@ -a,b +c,d @@ を解析
+    hunk_header = re.compile(r"@@ -(\d+)(?:,(\d+))? \+\d+(?:,\d+)? @@")
+
+    for line in result.stdout.splitlines():
+        m = hunk_header.search(line)
+        if not m:
+            continue
+
+        start = int(m.group(1))
+        length = int(m.group(2) or 1)
+
+        # 変更後に行が存在しない（削除のみ）の場合はスキップ
+        if length == 0:
+            continue
+
+        modified_lines.extend(range(start, start + length))
+
+    return modified_lines
+
 def make_dataset( data ):
     # projectごとにcsvファイルを生成
     # file_path, SRCをそれぞれ取得
@@ -218,7 +269,10 @@ def make_dataset( data ):
          ###### line-levelデータ作成 ######
          # 必要な列のみ抽出、列名変更
          df_linelevel = df_project[["bugFilePath", "bugLineNum", "sourceBeforeFix", "bugType"]].copy()
-         df_linelevel = df_linelevel.rename(columns={"bugFilePath": "File", "bugLineNum": "Line_number", "sourceBeforeFix": "SRC"})         
+         df_linelevel = df_linelevel.rename(columns={"bugFilePath": "File", "bugLineNum": "Line_number", "sourceBeforeFix": "SRC"})    
+         
+         
+              
          df_linelevel_releases = {}
          for release_num, indices in releases_indices.items():             
              df_linelevel_releases[release_num] = df_linelevel.loc[indices]
