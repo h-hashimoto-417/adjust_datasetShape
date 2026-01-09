@@ -189,6 +189,43 @@ def get_modified_lines_for_file(repo_path, commit_hash, file_path):
 
     return modified_lines
 
+def read_diff_file(diff_text):
+    """
+    diffテキストを解析し、行ごとの情報を取得する関数
+    :param diff_text: diffファイルの文字列
+    :return: list of tuples (line_number,  length)
+    """
+    lines_info = []
+    current_line_num = None
+
+    hunk_header = re.compile(r"@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@")
+
+    for line in diff_text.splitlines():
+        m = hunk_header.search(line)
+        if m:
+            current_line_num = int(m.group(1))
+            continue
+
+        if line.startswith('+') or line.startswith('-'):
+            # 追加行や削除行はスキップ
+            continue
+
+        if current_line_num is not None:
+            lines_info.append((current_line_num, line))
+            current_line_num += 1
+
+    return lines_info
+
+def check_bug_line_num(modified_lines, diff_file):
+    """
+    diff_file内にmodified_linesが含まれているか確認する関数
+    :param modified_lines: 修正行番号の list[int]
+    :param diff_file: diffファイルの文字列
+    :return: real_num: 実際にdiff内で修正されている行番号
+    """
+    
+    
+
 def make_dataset( data ):
     # projectごとにcsvファイルを生成
     # file_path, SRCをそれぞれ取得
@@ -270,8 +307,25 @@ def make_dataset( data ):
          # 必要な列のみ抽出、列名変更
          df_linelevel = df_project[["bugFilePath", "bugLineNum", "sourceBeforeFix", "bugType"]].copy()
          df_linelevel = df_linelevel.rename(columns={"bugFilePath": "File", "bugLineNum": "Line_number", "sourceBeforeFix": "SRC"})    
-         
-         
+         indexes_merge_commit = []
+         for index,row in df_project.iterrows():
+             commit_sha = row["fixCommitParentSHA1"]
+             file_path = row["bugFilePath"]
+             diff_file = row["fixPatch"]
+             bug_line_num = int(row["bugLineNum"])
+             is_merge = is_merge_commit(f'{dataset_project_path}{repo_name}', commit_sha)
+             if is_merge:
+                 #print(f'Warning: Skipping merge commit {commit_sha} for project {repo_name}.')
+                 # merge commitの場合はスキップ&削除
+                 indexes_merge_commit.append(index)
+                 continue
+             try:
+                 modified_lines = get_modified_lines_for_file(f'{dataset_project_path}{repo_name}', commit_sha, file_path)
+             except Exception as e:
+                 print(f'Error retrieving modified lines for {file_path} at commit {commit_sha}: {e}')
+                 modified_lines = []
+             
+             check_bug_line_num(modified_lines, diff_file)
               
          df_linelevel_releases = {}
          for release_num, indices in releases_indices.items():             
