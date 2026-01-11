@@ -213,14 +213,20 @@ def read_diff_file(diff_text):
         lines_info.append((start, length))
     return lines_info
 
-def check_bug_line_num(modified_lines, diff_file):
+def check_bug_line_num(modified_lines, diff_file, bug_line_num):
     """
     diff_file内にmodified_linesが含まれているか確認する関数
     :param modified_lines: 修正行番号の list[int]
     :param diff_file: diffファイルの文字列
     :return: real_num: 実際にdiff内で修正されている行番号
     """
-    for 
+    
+    for start, length in read_diff_file(diff_file):
+        if bug_line_num >= start and bug_line_num < start + length:
+            for modified_line in modified_lines:
+                if modified_line >= start and modified_line < start + length:
+                    return modified_line == bug_line_num, modified_line
+    return False, -1
     
 
 def make_dataset( data ):
