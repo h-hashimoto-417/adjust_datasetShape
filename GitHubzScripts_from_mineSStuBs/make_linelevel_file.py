@@ -346,7 +346,7 @@ def make_dataset( data ):
                  df_linelevel.index.isin(indices) & (~df_linelevel.index.isin(indexes_merge_commit)) & (~df_linelevel.index.isin(indexes_notfound_linenum))
                  ]
          
-         df_notfound = df_linelevel.loc[indexes_notfound_linenum].copy()
+         df_notfound = df_project.loc[indexes_notfound_linenum].copy()
          df_notfound = df_notfound[["projectName", "bugFilePath", "fixCommitSHA1", "bugLineNum", "bugType"]]
          if not df_notfound.empty:
              notfound_file = f'{repo_name}-notfound_linenum_bugs.csv'
