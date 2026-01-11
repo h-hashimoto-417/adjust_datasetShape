@@ -311,6 +311,7 @@ def make_dataset( data ):
          df_linelevel = df_project[["bugFilePath", "bugLineNum", "sourceBeforeFix", "bugType"]].copy()
          df_linelevel = df_linelevel.rename(columns={"bugFilePath": "File", "bugLineNum": "Line_number", "sourceBeforeFix": "SRC"})    
          indexes_merge_commit = []
+         indexes_notfound_linenum = []
          for index,row in df_project.iterrows():
              commit_sha = row["fixCommitParentSHA1"]
              file_path = row["bugFilePath"]
@@ -328,7 +329,13 @@ def make_dataset( data ):
                  print(f'Error retrieving modified lines for {file_path} at commit {commit_sha}: {e}')
                  modified_lines = []
              
-             check_bug_line_num(modified_lines, diff_file)
+             is_correct_linenum, modified_line = check_bug_line_num(modified_lines, diff_file, bug_line_num)
+             if not is_correct_linenum:
+                 if modified_line == -1:
+                     print(f'Warning: In project {repo_name}, for file {file_path} at commit {commit_sha}, bug line number {bug_line_num} not found in modified lines {modified_lines}.')
+                     indexes_notfound_linenum.append(index)
+                 else:
+                     df_linelevel.loc[index, "Line_number"] = modified_line
               
          df_linelevel_releases = {}
          for release_num, indices in releases_indices.items():             
