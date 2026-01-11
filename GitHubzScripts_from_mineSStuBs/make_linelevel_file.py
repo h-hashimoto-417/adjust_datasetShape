@@ -268,18 +268,19 @@ def make_dataset( data ):
          release_on_file = {}
          df_filelevel_releases = {}
          for index,row in df_project.iterrows():
-             commit_sha = row["fixCommitParentSHA1"]
+             commit_parent_sha = row["fixCommitParentSHA1"]
+             commit_sha = row["fixCommitSHA1"]
              file_path = row["bugFilePath"]
              is_merge = is_merge_commit(f'{dataset_project_path}{repo_name}', commit_sha)
              if is_merge:
-                 #print(f'Warning: Skipping merge commit {commit_sha} for project {repo_name}.')
+                 #print(f'Warning: Skipping merge commit {commit_parent_sha} for project {repo_name}.')
                  # merge commitの場合はスキップ&削除
                  indexes_to_drop.append(index)
                  continue
              try:
-                 src_content = get_file_content_at_commit(f'{dataset_project_path}{repo_name}', commit_sha, file_path)
+                 src_content = get_file_content_at_commit(f'{dataset_project_path}{repo_name}', commit_parent_sha, file_path)
              except Exception as e:
-                 print(f'Error retrieving file content for {file_path} at commit {commit_sha}: {e}')
+                 print(f'Error retrieving file content for {file_path} at commit {commit_parent_sha}: {e}')
                  src_content = ""
              
              existing_file = df_filelevel[(df_filelevel["File"] == file_path) & (df_filelevel["SRC"] != "")]
@@ -316,7 +317,7 @@ def make_dataset( data ):
          indexes_merge_commit = []
          indexes_notfound_linenum = []
          for index,row in df_project.iterrows():
-             commit_sha = row["fixCommitParentSHA1"]
+             commit_sha = row["fixCommitSHA1"]
              file_path = row["bugFilePath"]
              diff_file = row["fixPatch"]
              bug_line_num = int(row["bugLineNum"])
