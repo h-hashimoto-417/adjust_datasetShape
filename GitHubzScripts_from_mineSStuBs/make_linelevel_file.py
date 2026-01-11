@@ -21,6 +21,9 @@ projects_list_file = f'{root_path}{folder_string}/topJavaMavenProjects.csv'
 file_level_path = f'{root_path}{folder_string}/{result_string}/File-level/'
 line_level_path = f'{root_path}{folder_string}/{result_string}/Line-level/'
 dataset_project_path = f'{root_path}{dataset_string}/'
+
+check_line_num_file_path = f'{root_path}{folder_string}/{result_string}/'
+
 # 定数
 PROJECTS_NUM = 100
 # global 変数
@@ -339,9 +342,15 @@ def make_dataset( data ):
               
          df_linelevel_releases = {}
          for release_num, indices in releases_indices.items():             
-             df_linelevel_releases[release_num] = df_linelevel.loc[indices]
-         # File列にproject_nameを追加
-         #df_linelevel["File"] = project_name + "/" + df_linelevel["File"]
+             df_linelevel_releases[release_num] = df_linelevel.loc[
+                 df_linelevel.index.isin(indices) & (~df_linelevel.index.isin(indexes_merge_commit)) & (~df_linelevel.index.isin(indexes_notfound_linenum))
+                 ]
+         
+         df_notfound = df_linelevel.loc[indexes_notfound_linenum].copy()
+         df_notfound = df_notfound[["projectName", "bugFilePath", "fixCommitSHA1", "bugLineNum", "bugType"]]
+         if not df_notfound.empty:
+             notfound_file = f'{repo_name}-notfound_linenum_bugs.csv'
+             save_csv(check_line_num_file_path, notfound_file, df_notfound)
          
          filelevel_csv_name = f'{repo_name}-1.0.0_files_dataset.csv'
          linelevel_csv_name = f'{repo_name}-1.0.0_defective_lines_dataset.csv'
