@@ -196,24 +196,21 @@ def read_diff_file(diff_text):
     :return: list of tuples (line_number,  length)
     """
     lines_info = []
-    current_line_num = None
-
-    hunk_header = re.compile(r"@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@")
+    # @@ -a,b +c,d @@ を解析
+    hunk_header = re.compile(r"@@ -(\d+)(?:,(\d+))? \+\d+(?:,\d+)? @@")
 
     for line in diff_text.splitlines():
         m = hunk_header.search(line)
-        if m:
-            current_line_num = int(m.group(1))
+        if not m:
             continue
 
-        if line.startswith('+') or line.startswith('-'):
-            # 追加行や削除行はスキップ
+        start = int(m.group(1))
+        length = int(m.group(2) or 1)
+
+        # 変更後に行が存在しない（削除のみ）の場合はスキップ
+        if length == 0:
             continue
-
-        if current_line_num is not None:
-            lines_info.append((current_line_num, line))
-            current_line_num += 1
-
+        lines_info.append((start, length))
     return lines_info
 
 def check_bug_line_num(modified_lines, diff_file):
@@ -223,7 +220,7 @@ def check_bug_line_num(modified_lines, diff_file):
     :param diff_file: diffファイルの文字列
     :return: real_num: 実際にdiff内で修正されている行番号
     """
-    
+    for 
     
 
 def make_dataset( data ):
