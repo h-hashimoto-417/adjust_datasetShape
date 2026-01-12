@@ -281,13 +281,47 @@ def check_bug_line_num(data):
         projects_yielded += 1
 
 def check_dataset_line_num():
+    for project_release in PROJECT_RELEASE_LIST:
+        repo_name = '-'.join(project_release.split('-')[:-1])
+        print (f'Processing project: {project_release}')
+        df_linelevel = read_csv( line_level_path, f'{project_release}_defective_lines_dataset.csv' )
+        if df_linelevel.empty:
+            print(f'Warning: No data for project {project_release}. Skipping.')
+            continue
+        if os.path.isdir(f'{dataset_project_path}{repo_name}') is False:
+            print(f'Warning: Project directory {dataset_project_path}{repo_name} does not exist. Skipping.')
+            continue
+        
+        diff_linenum_bugs = []
+        for index,row in df_linelevel.iterrows():
+            commit_sha = row["fixCommitSHA1"]
+            file_path = row["File"]
+            try:
+                modified_lines = get_modified_lines_for_file(f'{dataset_project_path}{repo_name}', commit_sha, file_path)
+            except Exception as e:
+                print(f'Error retrieving modified lines for {file_path} at commit {commit_sha}: {e}')
+                modified_lines = []
+            bug_line_num = int(row["Line_number"])
+            if bug_line_num not in modified_lines:
+                print(f'Warning: In project {project_release}, for file {file_path} at commit {commit_sha}, bug line number {bug_line_num} not found in modified lines {modified_lines}.')
+                diff_linenum_bugs.append(index)
+        df_diff = df_linelevel.loc[diff_linenum_bugs].copy()
+        
+        if not df_diff.empty:
+            check_line_num_file = f'{project_release}-diff_bug_linenum.csv'
+            save_csv(check_line_num_file_path, check_line_num_file, df_diff)
+            print(f'{project_release} line number were mismatched.')
+        else:
+            print(f'All bug line numbers matched for project {project_release}.')
+        
     return            
 
 def main():    
     # jsonデータの読み込み
     jsondata = read_json_file(sstubs_file)
 
-    check_bug_line_num(jsondata)
+    #check_bug_line_num(jsondata)
+    check_dataset_line_num()
 
 if __name__ == "__main__":
     main()    
