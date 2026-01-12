@@ -6,6 +6,7 @@ import csv
 from git import Repo
 import subprocess
 import re
+from GitHubzScripts_from_mineSStuBs.config import PROJECT_RELEASE_LIST
 
 # path
 #root_path = r'C:/Users/hitom/GitHubrepo/'
