@@ -90,6 +90,16 @@ def save_csv(file_path, file_name, data):
     data.to_csv(f'{file_path}{file_name}', index=False, encoding="utf-8")
     #print(f'Result has been saved to {file_path}{file_name} successfully!')
 
+def read_csv(file_path, file_name):
+    """
+    Read csv file from f{file_path}{file_name}.
+    :param file_path: The file location
+    :param file_name: The file name
+    :return: data
+    """
+    data = pd.read_csv(f'{file_path}{file_name}', encoding="utf-8")
+    return data
+
 def make_path(path):
     """
     Make path is it does not exists
@@ -268,7 +278,9 @@ def check_bug_line_num(data):
         
         global projects_yielded
         projects_yielded += 1
-            
+
+def check_dataset_line_num():
+    return            
 
 def main():    
     # jsonデータの読み込み
