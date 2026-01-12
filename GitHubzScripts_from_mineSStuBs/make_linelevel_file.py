@@ -312,7 +312,7 @@ def make_dataset( data ):
 
          ###### line-levelデータ作成 ######
          # 必要な列のみ抽出、列名変更
-         df_linelevel = df_project[["bugFilePath", "bugLineNum", "sourceBeforeFix", "bugType"]].copy()
+         df_linelevel = df_project[["bugFilePath", "bugLineNum", "sourceBeforeFix", "bugType", "fixCommitSHA1"]].copy()
          df_linelevel = df_linelevel.rename(columns={"bugFilePath": "File", "bugLineNum": "Line_number", "sourceBeforeFix": "SRC"})    
          indexes_merge_commit = []
          indexes_notfound_linenum = []
@@ -351,7 +351,7 @@ def make_dataset( data ):
          df_notfound = df_notfound[["projectName", "bugFilePath", "fixCommitSHA1", "bugLineNum", "bugType"]]
          if not df_notfound.empty:
              notfound_file = f'{repo_name}-notfound_linenum_bugs.csv'
-             save_csv(check_line_num_file_path, notfound_file, df_notfound)
+             #save_csv(check_line_num_file_path, notfound_file, df_notfound)
          
          filelevel_csv_name = f'{repo_name}-1.0.0_files_dataset.csv'
          linelevel_csv_name = f'{repo_name}-1.0.0_defective_lines_dataset.csv'
