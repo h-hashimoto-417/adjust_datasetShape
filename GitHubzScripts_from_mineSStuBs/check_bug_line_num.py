@@ -6,7 +6,7 @@ import csv
 from git import Repo
 import subprocess
 import re
-from GitHubzScripts_from_mineSStuBs.config import PROJECT_RELEASE_LIST
+from config import PROJECT_RELEASE_LIST
 
 # path
 #root_path = r'C:/Users/hitom/GitHubrepo/'
@@ -98,6 +98,9 @@ def read_csv(file_path, file_name):
     :param file_name: The file name
     :return: data
     """
+    if not os.path.isfile(f'{file_path}{file_name}'):
+        print(f'Error: File {file_path}{file_name} does not exist.')
+        return pd.DataFrame()  # 空のDataFrameを返す
     data = pd.read_csv(f'{file_path}{file_name}', encoding="utf-8")
     return data
 
