@@ -462,12 +462,23 @@ def make_dataset( data ):
             print(f'Error: {project_name} csv not created.')
     
 
+def test_method():
+    # test用メソッド
+    repo_name = 'spring-projects.spring-boot'
+    commit_hash = 'e3c87cba0bbed00c739e01599e29a5621c9ef3b3'
+    commit_parent_hash = 'b3f5e3d2c4f5e6d7e8f9e0f1e2f3e4f5e6f7e8f'
+    file_path = 'spring-boot-project/spring-boot-autoconfigure/src/main/java/org/springframework/boot/autoconfigure/rsocket/RSocketServerAutoConfiguration.java'
+    dataset_path = f'{dataset_project_path}{repo_name}'
+
+    modified_lines =get_modified_lines_from_merge_commit(dataset_path, commit_hash, commit_parent_hash, file_path)
+    print(modified_lines)
 
 def main():    
     # jsonデータの読み込み
     jsondata = read_json_file(sstubs_file)
 
-    make_dataset(jsondata)
+    #make_dataset(jsondata)
+    test_method()
 
 if __name__ == "__main__":
     main()
