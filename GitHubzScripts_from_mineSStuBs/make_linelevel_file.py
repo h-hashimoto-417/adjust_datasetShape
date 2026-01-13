@@ -466,7 +466,7 @@ def test_method():
     # test用メソッド
     repo_name = 'spring-projects.spring-boot'
     commit_hash = 'e3c87cba0bbed00c739e01599e29a5621c9ef3b3'
-    commit_parent_hash = 'b3f5e3d2c4f5e6d7e8f9e0f1e2f3e4f5e6f7e8f'
+    commit_parent_hash = 'c44a6dee3d0bf523339972715f752e878e2b346a'
     file_path = 'spring-boot-project/spring-boot-autoconfigure/src/main/java/org/springframework/boot/autoconfigure/rsocket/RSocketServerAutoConfiguration.java'
     dataset_path = f'{dataset_project_path}{repo_name}'
 
