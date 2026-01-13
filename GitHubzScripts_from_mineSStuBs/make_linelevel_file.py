@@ -341,11 +341,22 @@ def make_dataset( data ):
              commit_parent_sha = row["fixCommitParentSHA1"]
              commit_sha = row["fixCommitSHA1"]
              file_path = row["bugFilePath"]
+             bug_line_num = int(row["bugLineNum"])
              is_merge = is_merge_commit(f'{dataset_project_path}{repo_name}', commit_sha)
              if is_merge: 
-                 # merge commitの場合はスキップ&削除
-                 indexes_to_drop.append(index)
-                 continue
+                 if is_duplicate_commit(df_project, repo_name, commit_sha, file_path, bug_line_num):
+                    # merge commitかつ内容が重複した普通コミットが存在する場合はスキップ&削除
+                    indexes_to_drop.append(index)
+                    continue
+                 else:
+                    try:
+                        modified_lines = get_modified_lines_from_merge_commit(f'{dataset_project_path}{repo_name}', commit_sha, commit_parent_sha, file_path)
+                    except Exception as e:
+                        modified_lines = []
+                    if bug_line_num not in modified_lines:
+                        # merge commitかつbug line numが修正行に含まれない場合はスキップ&削除
+                        indexes_to_drop.append(index)
+                        continue
              try:
                  src_content = get_file_content_at_commit(f'{dataset_project_path}{repo_name}', commit_parent_sha, file_path)
              except Exception as e:
@@ -392,10 +403,20 @@ def make_dataset( data ):
              bug_line_num = int(row["bugLineNum"])
              is_merge = is_merge_commit(f'{dataset_project_path}{repo_name}', commit_sha)
              if is_merge:
-                 #print(f'Warning: Skipping merge commit {commit_sha} for project {repo_name}.')
-                 # merge commitの場合はスキップ&削除
-                 indexes_merge_commit.append(index)
-                 continue
+                 if is_duplicate_commit(df_project, repo_name, commit_sha, file_path, bug_line_num):
+                    # merge commitかつ内容が重複した普通コミットが存在する場合はスキップ&削除
+                    indexes_merge_commit.append(index)
+                    continue
+                 else:
+                    try:
+                        modified_lines = get_modified_lines_from_merge_commit(f'{dataset_project_path}{repo_name}', commit_sha, commit_parent_sha, file_path)
+                    except Exception as e:
+                        print(f'Error retrieving modified lines for {file_path} at merge commit {commit_sha}: {e}')
+                        modified_lines = []
+                    if bug_line_num not in modified_lines:
+                        # merge commitかつbug line numが修正行に含まれない場合はスキップ&削除
+                        indexes_merge_commit.append(index)
+                    continue                
              try:
                  modified_lines = get_modified_lines_for_file(f'{dataset_project_path}{repo_name}', commit_sha, file_path)
              except Exception as e:
