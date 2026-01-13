@@ -336,7 +336,7 @@ def make_dataset( data ):
          indexes_to_drop = []
          releases_indices = {1: []}
          release_on_file = {}
-         df_filelevel_releases = {}
+         
          for index,row in df_project.iterrows():
              commit_parent_sha = row["fixCommitParentSHA1"]
              commit_sha = row["fixCommitSHA1"]
@@ -385,11 +385,6 @@ def make_dataset( data ):
                 else:
                     releases_indices[release_on_file[file_path]].append(index)
            
-         for release_num, indices in releases_indices.items():
-             df_filelevel_releases[release_num] = df_filelevel.loc[
-                 (df_filelevel.index.isin(indices)) & (~df_filelevel.index.isin(indexes_to_drop))
-             ]
-
          ###### line-levelデータ作成 ######
          # 必要な列のみ抽出、列名変更
          df_linelevel = df_project[["bugFilePath", "bugLineNum", "sourceBeforeFix", "bugType", "fixCommitSHA1"]].copy()
@@ -430,9 +425,13 @@ def make_dataset( data ):
                      indexes_notfound_linenum.append(index)
                  else:
                      df_linelevel.loc[index, "Line_number"] = modified_line
-              
+                  
+         df_filelevel_releases = {}
          df_linelevel_releases = {}
-         for release_num, indices in releases_indices.items():             
+         for release_num, indices in releases_indices.items():   
+             df_filelevel_releases[release_num] = df_filelevel.loc[
+                 (df_filelevel.index.isin(indices)) & (~df_filelevel.index.isin(indexes_to_drop))
+             ]          
              df_linelevel_releases[release_num] = df_linelevel.loc[
                  df_linelevel.index.isin(indices) & (~df_linelevel.index.isin(indexes_merge_commit)) & (~df_linelevel.index.isin(indexes_notfound_linenum))
                  ]
