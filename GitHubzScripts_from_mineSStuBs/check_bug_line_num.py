@@ -183,6 +183,59 @@ def get_modified_lines_for_file(repo_path, commit_hash, file_path):
     return modified_lines
 
 
+def get_modified_lines_from_merge_commit(repo_path, commit, parent_commit, file_path):
+    """
+    指定コミット・指定ファイルで修正された
+    「修正前ファイルの行番号」を返す
+
+    :param repo_path: ローカルにクローンした Git リポジトリのパス
+    :param commit_hash: コミットハッシュ
+    :param file_path: リポジトリルートからの相対パス
+    :return: 修正行番号の list[int]
+    """
+    cmd = [
+        "git",
+        "-C",
+        repo_path,
+        "diff",
+        parent_commit,
+        commit,
+        "-U0",
+        "--",
+        file_path,
+    ]
+
+    result = subprocess.run(
+        cmd,        
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=True,
+    )
+
+    modified_lines = []
+
+    # @@ -a,b +c,d @@ を解析
+    hunk_header = re.compile(r"@@ -(\d+)(?:,(\d+))? \+\d+(?:,\d+)? @@")
+
+    for line in result.stdout.splitlines():
+        m = hunk_header.search(line)
+        if not m:
+            continue
+
+        start = int(m.group(1))
+        length = int(m.group(2) or 1)
+
+        # 変更後に行が存在しない（削除のみ）の場合はスキップ
+        if length == 0:
+            continue
+
+        modified_lines.extend(range(start, start + length))
+
+    return modified_lines
+
+
+
 def is_merge_commit(repo_path, commit_hash):
     cmd = [
         "git",
@@ -298,16 +351,26 @@ def check_dataset_line_num():
         diff_linenum_bugs = []
         for index,row in df_linelevel.iterrows():
             commit_sha = row["fixCommitSHA1"]
+            commit_parent_sha = row["fixCommitParentSHA1"]
             file_path = row["File"]
-            try:
-                modified_lines = get_modified_lines_for_file(f'{dataset_project_path}{repo_name}', commit_sha, file_path)
-            except Exception as e:
-                print(f'Error retrieving modified lines for {file_path} at commit {commit_sha}: {e}')
-                modified_lines = []
             bug_line_num = int(row["Line_number"])
+            if is_merge_commit(f'{dataset_project_path}{repo_name}', commit_sha):
+                try:
+                    modified_lines = get_modified_lines_from_merge_commit(f'{dataset_project_path}{repo_name}', commit_sha, commit_parent_sha, file_path)
+                except Exception as e:
+                    print(f'Error retrieving modified lines for {file_path} at merge commit {commit_sha}: {e}')
+                    modified_lines = []
+            else:
+                try:
+                    modified_lines = get_modified_lines_for_file(f'{dataset_project_path}{repo_name}', commit_sha, file_path)
+                except Exception as e:
+                    print(f'Error retrieving modified lines for {file_path} at commit {commit_sha}: {e}')
+                    modified_lines = []
+            
             if bug_line_num not in modified_lines:
                 print(f'Warning: In project {project_release}, for file {file_path} at commit {commit_sha}, bug line number {bug_line_num} not found in modified lines {modified_lines}.')
                 diff_linenum_bugs.append(index)
+                
         df_diff = df_linelevel.loc[diff_linenum_bugs].copy()
         
         if not df_diff.empty:
