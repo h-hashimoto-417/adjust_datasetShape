@@ -336,7 +336,8 @@ def make_dataset( data ):
          ###### line-levelデータ作成 ######
          # 必要な列のみ抽出、列名変更
          df_linelevel = df_project[["bugFilePath", "bugLineNum", "sourceBeforeFix", "bugType", "fixCommitSHA1"]].copy()
-         df_linelevel = df_linelevel.rename(columns={"bugFilePath": "File", "bugLineNum": "Line_number", "sourceBeforeFix": "SRC"})    
+         df_linelevel = df_linelevel.rename(columns={"bugFilePath": "File", "bugLineNum": "Line_number", "sourceBeforeFix": "SRC"}) 
+         df_linelevel["fixCommitParentSHA1"] = ""  # merge commitのみ親コミットを追加
          indexes_merge_commit = []
          indexes_notfound_linenum = []         
          
@@ -358,6 +359,7 @@ def make_dataset( data ):
                     indexes_merge_commit.append(index)
                     continue
                  else:
+                    # 行番号の確認処理
                     try:
                         modified_lines = get_modified_lines_from_merge_commit(f'{dataset_project_path}{repo_name}', commit_sha, commit_parent_sha, file_path)
                     except Exception as e:
@@ -367,8 +369,10 @@ def make_dataset( data ):
                         indexes_to_drop.append(index)
                         indexes_merge_commit.append(index)
                         continue
-                    # elseの場合はfile-levelデータ作成へ進む
-                    
+                    else:
+                        df_linelevel.loc[index, "fixCommitParentSHA1"] = commit_parent_sha
+                        # file-levelデータ作成へ進む
+
              ###### line-levelデータ作成 行番号の確認処理(正しい場合は何もしない) ######
              else:
                  try:
