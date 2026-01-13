@@ -192,6 +192,60 @@ def get_modified_lines_for_file(repo_path, commit_hash, file_path):
 
     return modified_lines
 
+
+def get_modified_lines_from_merge_commit(repo_path, commit, parent_commit, file_path):
+    """
+    指定コミット・指定ファイルで修正された
+    「修正前ファイルの行番号」を返す
+
+    :param repo_path: ローカルにクローンした Git リポジトリのパス
+    :param commit_hash: コミットハッシュ
+    :param file_path: リポジトリルートからの相対パス
+    :return: 修正行番号の list[int]
+    """
+    cmd = [
+        "git",
+        "-C",
+        repo_path,
+        "diff",
+        parent_commit,
+        commit,
+        "-U0",
+        "--",
+        file_path,
+    ]
+
+    result = subprocess.run(
+        cmd,        
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=True,
+    )
+
+    modified_lines = []
+
+    # @@ -a,b +c,d @@ を解析
+    hunk_header = re.compile(r"@@ -(\d+)(?:,(\d+))? \+\d+(?:,\d+)? @@")
+
+    for line in result.stdout.splitlines():
+        m = hunk_header.search(line)
+        if not m:
+            continue
+
+        start = int(m.group(1))
+        length = int(m.group(2) or 1)
+
+        # 変更後に行が存在しない（削除のみ）の場合はスキップ
+        if length == 0:
+            continue
+
+        modified_lines.extend(range(start, start + length))
+
+    return modified_lines
+
+
+
 def read_diff_file(diff_text):
     """
     diffテキストを解析し、行ごとの情報を取得する関数
@@ -231,6 +285,22 @@ def check_bug_line_num(modified_lines, diff_file, bug_line_num):
                     return modified_line == bug_line_num, modified_line
     return False, -1
     
+ 
+def is_duplicate_commit(df_project, repo_name, commit_sha, file_path, bug_line_num):
+    # 同じファイル・行番号で、マージコミットでないバグ修正コミットが存在するか確認
+    same_bugs = df_project[
+        (df_project["bugFilePath"] == file_path) &
+        (df_project["bugLineNum"] == bug_line_num) &
+        (df_project["fixCommitSHA1"] != commit_sha)
+    ]
+    has_same_commit = False
+    for _, sb_row in same_bugs.iterrows():
+        sb_commit = sb_row["fixCommitSHA1"]
+        if not is_merge_commit(f'{dataset_project_path}{repo_name}', sb_commit):
+            has_same_commit = True
+            break
+    return has_same_commit
+
 
 def make_dataset( data ):
     # projectごとにcsvファイルを生成
@@ -272,8 +342,7 @@ def make_dataset( data ):
              commit_sha = row["fixCommitSHA1"]
              file_path = row["bugFilePath"]
              is_merge = is_merge_commit(f'{dataset_project_path}{repo_name}', commit_sha)
-             if is_merge:
-                 #print(f'Warning: Skipping merge commit {commit_parent_sha} for project {repo_name}.')
+             if is_merge: 
                  # merge commitの場合はスキップ&削除
                  indexes_to_drop.append(index)
                  continue
