@@ -327,13 +327,19 @@ def make_dataset( data ):
          # 必要な列のみ抽出、列名変更
          df_filelevel = df_project[["bugFilePath"]].copy()
          df_filelevel = df_filelevel.rename(columns={"bugFilePath": "File"})
-         # File列にproject_nameを追加
-         #df_filelevel["File"] = project_name + "/" + df_filelevel["File"]
          # 今回はbugのあるファイルのみを扱う
          df_filelevel.insert(df_filelevel.columns.get_loc("File") + 1, "Bug", True)
          # それぞれのファイルのSRCを取得
          df_filelevel.insert(df_filelevel.columns.get_loc("Bug") + 1, "SRC", "")
          indexes_to_drop = []
+         
+         ###### line-levelデータ作成 ######
+         # 必要な列のみ抽出、列名変更
+         df_linelevel = df_project[["bugFilePath", "bugLineNum", "sourceBeforeFix", "bugType", "fixCommitSHA1"]].copy()
+         df_linelevel = df_linelevel.rename(columns={"bugFilePath": "File", "bugLineNum": "Line_number", "sourceBeforeFix": "SRC"})    
+         indexes_merge_commit = []
+         indexes_notfound_linenum = []         
+         
          releases_indices = {1: []}
          release_on_file = {}
          
@@ -342,11 +348,14 @@ def make_dataset( data ):
              commit_sha = row["fixCommitSHA1"]
              file_path = row["bugFilePath"]
              bug_line_num = int(row["bugLineNum"])
+             diff_file = row["fixPatch"]
+             
              is_merge = is_merge_commit(f'{dataset_project_path}{repo_name}', commit_sha)
              if is_merge: 
                  if is_duplicate_commit(df_project, repo_name, commit_sha, file_path, bug_line_num):
                     # merge commitかつ内容が重複した普通コミットが存在する場合はスキップ&削除
                     indexes_to_drop.append(index)
+                    indexes_merge_commit.append(index)
                     continue
                  else:
                     try:
@@ -356,7 +365,30 @@ def make_dataset( data ):
                     if bug_line_num not in modified_lines:
                         # merge commitかつbug line numが修正行に含まれない場合はスキップ&削除
                         indexes_to_drop.append(index)
+                        indexes_merge_commit.append(index)
                         continue
+                    # elseの場合はfile-levelデータ作成へ進む
+                    
+             ###### line-levelデータ作成 行番号の確認処理(正しい場合は何もしない) ######
+             else:
+                 try:
+                    modified_lines = get_modified_lines_for_file(f'{dataset_project_path}{repo_name}', commit_sha, file_path)
+                 except Exception as e:
+                    print(f'Error retrieving modified lines for {file_path} at commit {commit_sha}: {e}')
+                    modified_lines = []
+                    
+                 is_correct_linenum, modified_line = check_bug_line_num(modified_lines, diff_file, bug_line_num)
+                 if not is_correct_linenum:
+                    if modified_line == -1:
+                        # bug_line_numがdiff_file内に存在しない場合はスキップ&削除
+                        print(f'Warning: In project {repo_name}, for file {file_path} at commit {commit_sha}, bug line number {bug_line_num} not found in modified lines {modified_lines}.')
+                        indexes_to_drop.append(index)
+                        indexes_notfound_linenum.append(index)
+                        continue
+                    else:
+                        df_linelevel.loc[index, "Line_number"] = modified_line
+                 
+             ###### file-levelデータ作成 SRC部分の補完 ######
              try:
                  src_content = get_file_content_at_commit(f'{dataset_project_path}{repo_name}', commit_parent_sha, file_path)
              except Exception as e:
@@ -385,47 +417,7 @@ def make_dataset( data ):
                 else:
                     releases_indices[release_on_file[file_path]].append(index)
            
-         ###### line-levelデータ作成 ######
-         # 必要な列のみ抽出、列名変更
-         df_linelevel = df_project[["bugFilePath", "bugLineNum", "sourceBeforeFix", "bugType", "fixCommitSHA1"]].copy()
-         df_linelevel = df_linelevel.rename(columns={"bugFilePath": "File", "bugLineNum": "Line_number", "sourceBeforeFix": "SRC"})    
-         indexes_merge_commit = []
-         indexes_notfound_linenum = []
-         for index,row in df_project.iterrows():
-             commit_sha = row["fixCommitSHA1"]
-             file_path = row["bugFilePath"]
-             diff_file = row["fixPatch"]
-             bug_line_num = int(row["bugLineNum"])
-             is_merge = is_merge_commit(f'{dataset_project_path}{repo_name}', commit_sha)
-             if is_merge:
-                 if is_duplicate_commit(df_project, repo_name, commit_sha, file_path, bug_line_num):
-                    # merge commitかつ内容が重複した普通コミットが存在する場合はスキップ&削除
-                    indexes_merge_commit.append(index)
-                    continue
-                 else:
-                    try:
-                        modified_lines = get_modified_lines_from_merge_commit(f'{dataset_project_path}{repo_name}', commit_sha, commit_parent_sha, file_path)
-                    except Exception as e:
-                        print(f'Error retrieving modified lines for {file_path} at merge commit {commit_sha}: {e}')
-                        modified_lines = []
-                    if bug_line_num not in modified_lines:
-                        # merge commitかつbug line numが修正行に含まれない場合はスキップ&削除
-                        indexes_merge_commit.append(index)
-                    continue                
-             try:
-                 modified_lines = get_modified_lines_for_file(f'{dataset_project_path}{repo_name}', commit_sha, file_path)
-             except Exception as e:
-                 print(f'Error retrieving modified lines for {file_path} at commit {commit_sha}: {e}')
-                 modified_lines = []
-             
-             is_correct_linenum, modified_line = check_bug_line_num(modified_lines, diff_file, bug_line_num)
-             if not is_correct_linenum:
-                 if modified_line == -1:
-                     print(f'Warning: In project {repo_name}, for file {file_path} at commit {commit_sha}, bug line number {bug_line_num} not found in modified lines {modified_lines}.')
-                     indexes_notfound_linenum.append(index)
-                 else:
-                     df_linelevel.loc[index, "Line_number"] = modified_line
-                  
+         ###### releaseごとにcsvファイルを生成 ######                  
          df_filelevel_releases = {}
          df_linelevel_releases = {}
          for release_num, indices in releases_indices.items():   
