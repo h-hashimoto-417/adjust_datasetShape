@@ -477,8 +477,8 @@ def main():
     # jsonデータの読み込み
     jsondata = read_json_file(sstubs_file)
 
-    #make_dataset(jsondata)
-    test_method()
+    make_dataset(jsondata)
+    #test_method()
 
 if __name__ == "__main__":
     main()
