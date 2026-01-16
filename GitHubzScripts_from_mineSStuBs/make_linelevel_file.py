@@ -29,6 +29,11 @@ PROJECTS_NUM = 100
 # global 変数
 projects_yielded = 0
 
+has_same_commit_num = 0
+merge_linenum_corrected_num = 0
+merge_linenum_not_corrected_num = 0
+linenum_notfound_num = 0
+
 # 使用しないプロジェクト
 skipped_projects = [
     'zxing.zxing', # no bugs
@@ -357,6 +362,7 @@ def make_dataset( data ):
                     # merge commitかつ内容が重複した普通コミットが存在する場合はスキップ&削除
                     indexes_to_drop.append(index)
                     indexes_merge_commit.append(index)
+                    has_same_commit_num += 1
                     continue
                  else:
                     # 行番号の確認処理
@@ -368,9 +374,11 @@ def make_dataset( data ):
                         # merge commitかつbug line numが修正行に含まれない場合はスキップ&削除
                         indexes_to_drop.append(index)
                         indexes_merge_commit.append(index)
+                        merge_linenum_not_corrected_num += 1
                         continue
                     else:
                         df_linelevel.loc[index, "fixCommitParentSHA1"] = commit_parent_sha
+                        merge_linenum_corrected_num += 1
                         # file-levelデータ作成へ進む
 
              ###### line-levelデータ作成 行番号の確認処理(正しい場合は何もしない) ######
@@ -388,6 +396,7 @@ def make_dataset( data ):
                         print(f'Warning: In project {repo_name}, for file {file_path} at commit {commit_sha}, bug line number {bug_line_num} not found in modified lines {modified_lines}.')
                         indexes_to_drop.append(index)
                         indexes_notfound_linenum.append(index)
+                        linenum_notfound_num += 1
                         continue
                     else:
                         df_linelevel.loc[index, "Line_number"] = modified_line
@@ -456,7 +465,11 @@ def make_dataset( data ):
             print(f'Success: {project_name} file-level and line-level csv created.')
          else:
             print(f'Error: {project_name} csv not created.')
-    
+            
+    print(f"重複したマージコミットの数: {has_same_commit_num}")
+    print(f"マージコミットのうち行番号が正しい数: {merge_linenum_corrected_num}")
+    print(f"マージコミットのうち行番号が正しくない数: {merge_linenum_not_corrected_num}")
+    print(f"普通コミットで行番号が見つからない数: {linenum_notfound_num}")
 
 def test_method():
     # test用メソッド
