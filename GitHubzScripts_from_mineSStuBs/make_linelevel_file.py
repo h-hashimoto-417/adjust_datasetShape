@@ -428,9 +428,26 @@ def make_dataset( data ):
                 if release_on_file[file_path] not in releases_indices.keys():
                     releases_indices[release_on_file[file_path]] = [index]
                 else:
-                    releases_indices[release_on_file[file_path]].append(index)
-           
-         ###### releaseごとにcsvファイルを生成 ######                  
+                    releases_indices[release_on_file[file_path]].append(index)           
+         
+         df_notfound = df_project.loc[indexes_notfound_linenum].copy()
+         df_notfound = df_notfound[["projectName", "bugFilePath", "fixCommitSHA1", "bugLineNum", "bugType"]]
+         if not df_notfound.empty:
+             notfound_file = f'{repo_name}-notfound_linenum_bugs.csv'
+             #save_csv(check_line_num_file_path, notfound_file, df_notfound)
+             
+         df_mergecommits = df_project.loc[indexes_merge_commit].copy()
+         df_mergecommits = df_mergecommits[["projectName", "bugFilePath", "fixCommitSHA1", "bugLineNum", "bugType"]]
+         if not df_mergecommits.empty:
+             mergecommit_file = f'{repo_name}-merge_commit_bugs.csv'
+             #save_csv(check_line_num_file_path, mergecommit_file, df_mergecommits
+         
+         filelevel_csv_name = f'{repo_name}-1.0.0_files_dataset.csv'
+         linelevel_csv_name = f'{repo_name}-1.0.0_defective_lines_dataset.csv'
+        #  save_csv(file_level_path, filelevel_csv_name, df_filelevel)
+        #  save_csv(line_level_path, linelevel_csv_name, df_linelevel)
+        
+        ###### releaseごとにcsvファイルを生成 ######                  
          df_filelevel_releases = {}
          df_linelevel_releases = {}
          for release_num, indices in releases_indices.items():   
@@ -440,17 +457,6 @@ def make_dataset( data ):
              df_linelevel_releases[release_num] = df_linelevel.loc[
                  df_linelevel.index.isin(indices) & (~df_linelevel.index.isin(indexes_merge_commit)) & (~df_linelevel.index.isin(indexes_notfound_linenum))
                  ]
-         
-         df_notfound = df_project.loc[indexes_notfound_linenum].copy()
-         df_notfound = df_notfound[["projectName", "bugFilePath", "fixCommitSHA1", "bugLineNum", "bugType"]]
-         if not df_notfound.empty:
-             notfound_file = f'{repo_name}-notfound_linenum_bugs.csv'
-             #save_csv(check_line_num_file_path, notfound_file, df_notfound)
-         
-         filelevel_csv_name = f'{repo_name}-1.0.0_files_dataset.csv'
-         linelevel_csv_name = f'{repo_name}-1.0.0_defective_lines_dataset.csv'
-        #  save_csv(file_level_path, filelevel_csv_name, df_filelevel)
-        #  save_csv(line_level_path, linelevel_csv_name, df_linelevel)
          
          if df_filelevel_releases:
             for release_num, df_release in df_filelevel_releases.items():
