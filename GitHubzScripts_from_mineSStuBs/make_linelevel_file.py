@@ -33,6 +33,7 @@ has_same_commit_num = 0
 merge_linenum_corrected_num = 0
 merge_linenum_not_corrected_num = 0
 linenum_notfound_num = 0
+total_bugs_num = 0
 
 # 使用しないプロジェクト
 skipped_projects = [
@@ -340,8 +341,9 @@ def make_dataset( data ):
          
          ###### line-levelデータ作成 ######
          # 必要な列のみ抽出、列名変更
-         df_linelevel = df_project[["bugFilePath", "bugLineNum", "sourceBeforeFix", "bugType", "fixCommitSHA1"]].copy()
-         df_linelevel = df_linelevel.rename(columns={"bugFilePath": "File", "bugLineNum": "Line_number", "sourceBeforeFix": "SRC"}) 
+         df_linelevel = df_project[["bugFilePath", "bugLineNum", "bugType", "fixCommitSHA1"]].copy()
+         df_linelevel = df_linelevel.rename(columns={"bugFilePath": "File", "bugLineNum": "Line_number"}) 
+         df_linelevel.insert(df_linelevel.columns.get_loc("Line_number") + 1, "SRC", "")
          df_linelevel["fixCommitParentSHA1"] = ""  # merge commitのみ親コミットを追加
          indexes_merge_commit = []
          indexes_notfound_linenum = []         
@@ -428,7 +430,9 @@ def make_dataset( data ):
                 if release_on_file[file_path] not in releases_indices.keys():
                     releases_indices[release_on_file[file_path]] = [index]
                 else:
-                    releases_indices[release_on_file[file_path]].append(index)           
+                    releases_indices[release_on_file[file_path]].append(index)  
+             
+             total_bugs_num += 1         
          
          df_notfound = df_project.loc[indexes_notfound_linenum].copy()
          df_notfound = df_notfound[["projectName", "bugFilePath", "fixCommitSHA1", "bugLineNum", "bugType"]]
@@ -472,10 +476,12 @@ def make_dataset( data ):
          else:
             print(f'Error: {project_name} csv not created.')
             
+    print(f"マージコミット総数: {has_same_commit_num+merge_linenum_corrected_num+merge_linenum_not_corrected_num}")
     print(f"重複したマージコミットの数: {has_same_commit_num}")
     print(f"マージコミットのうち行番号が正しい数: {merge_linenum_corrected_num}")
     print(f"マージコミットのうち行番号が正しくない数: {merge_linenum_not_corrected_num}")
     print(f"普通コミットで行番号が見つからない数: {linenum_notfound_num}")
+    print(f"総バグ数: {total_bugs_num}")
 
 def test_method():
     # test用メソッド
