@@ -123,6 +123,37 @@ def get_file_content_at_commit(repo_path: str, commit_sha: str, file_path: str) 
     # blob.data_stream.read() は bytes なので decode する
     return blob.data_stream.read().decode("utf-8")
 
+
+def get_file_line_at_commit(
+    repo_path: str,
+    commit_sha: str,
+    file_path: str,
+    line_number: int,
+    encoding: str = "utf-8"
+) -> str:
+    """
+    指定したコミット時点でのファイルの特定行を取得する
+    :param repo_path: ローカル Git リポジトリのパス
+    :param commit_sha: コミットハッシュ
+    :param file_path: リポジトリ内の相対パス
+    :param line_number: 取得したい行番号（1始まり）
+    :return: 指定行の文字列
+    """
+    repo = Repo(repo_path)
+    commit = repo.commit(commit_sha)
+
+    blob = commit.tree / file_path
+    content = blob.data_stream.read().decode(encoding)
+
+    lines = content.splitlines()
+
+    if line_number < 1 or line_number > len(lines):
+        raise IndexError("指定した行番号が範囲外です")
+
+    return lines[line_number - 1]
+
+
+
 def is_merge_commit(repo_path, commit_hash):
     cmd = [
         "git",
@@ -380,6 +411,12 @@ def make_dataset( data ):
                         continue
                     else:
                         df_linelevel.loc[index, "fixCommitParentSHA1"] = commit_parent_sha
+                        df_linelevel.loc[index, "SRC"] = get_file_line_at_commit(
+                            f'{dataset_project_path}{repo_name}',
+                            commit_parent_sha,
+                            file_path,
+                            bug_line_num
+                        )
                         merge_linenum_corrected_num += 1
                         # file-levelデータ作成へ進む
 
@@ -402,6 +439,19 @@ def make_dataset( data ):
                         continue
                     else:
                         df_linelevel.loc[index, "Line_number"] = modified_line
+                        df_linelevel.loc[index, "SRC"] = get_file_line_at_commit(
+                            f'{dataset_project_path}{repo_name}',
+                            commit_sha,
+                            file_path,
+                            modified_line
+                        )
+                 else:
+                     df_linelevel.loc[index, "SRC"] = get_file_line_at_commit( 
+                         f'{dataset_project_path}{repo_name}',
+                         commit_sha,
+                         file_path,
+                         bug_line_num
+                     )
                  
              ###### file-levelデータ作成 SRC部分の補完 ######
              try:
