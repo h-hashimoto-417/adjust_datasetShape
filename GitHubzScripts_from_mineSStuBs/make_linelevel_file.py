@@ -359,6 +359,22 @@ def is_duplicate_commit(df_project, repo_name, commit_sha, file_path, bug_line_n
     return has_same_commit
 
 
+def get_df_duplicate_commits(df_project, repo_name, commit_sha, file_path, bug_line_num):
+    # 同じファイル・行番号で、マージコミットでないバグ修正コミットが存在するか確認
+    same_bugs = df_project[
+        (df_project["bugFilePath"] == file_path) &
+        (df_project["bugLineNum"] == bug_line_num) &
+        (df_project["fixCommitSHA1"] != commit_sha)
+    ]
+    duplicate_commits = []
+    for index, sb_row in same_bugs.iterrows():
+        sb_commit = sb_row["fixCommitSHA1"]
+        if not is_merge_commit(f'{dataset_project_path}{repo_name}', sb_commit):
+            duplicate_commits.append(index)
+    return df_project.loc[duplicate_commits]
+    
+
+
 def make_dataset( data ):
     # projectごとにcsvファイルを生成
     # file_path, SRCをそれぞれ取得
