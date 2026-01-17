@@ -532,7 +532,7 @@ def make_dataset( data ):
          df_mergecommits = df_mergecommits[["projectName", "bugFilePath", "fixCommitSHA1", "bugLineNum", "bugType"]]
          if not df_mergecommits.empty:
              mergecommit_file = f'{repo_name}-merge_commit_bugs.csv'
-             #save_csv(check_line_num_file_path, mergecommit_file, df_mergecommits
+             save_csv(check_line_num_file_path, mergecommit_file, df_mergecommits)
          
          filelevel_csv_name = f'{repo_name}-1.0.0_files_dataset.csv'
          linelevel_csv_name = f'{repo_name}-1.0.0_defective_lines_dataset.csv'
