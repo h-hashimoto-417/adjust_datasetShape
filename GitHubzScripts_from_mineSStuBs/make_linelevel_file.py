@@ -431,6 +431,7 @@ def make_dataset( data ):
                     # merge commitかつ内容が重複した普通コミットが存在する場合はスキップ&削除
                     indexes_to_drop.append(index)
                     indexes_merge_commit.append(index)
+                    global has_same_commit_num
                     has_same_commit_num += 1
                     df_duplicated = pd.concat([row, get_df_duplicate_commits(df_project, repo_name, commit_sha, file_path, bug_line_num)], axis=0)
                     append_csv(check_line_num_file_path, 'duplicate_merge_commits.csv', df_duplicated[["projectName", "bugFilePath", "fixCommitSHA1", "bugLineNum", "sourceBeforeFix", "bugType"]])
@@ -445,6 +446,7 @@ def make_dataset( data ):
                         # merge commitかつbug line numが修正行に含まれない場合はスキップ&削除
                         indexes_to_drop.append(index)
                         indexes_merge_commit.append(index)
+                        global merge_linenum_not_corrected_num
                         merge_linenum_not_corrected_num += 1
                         continue
                     else:
@@ -455,6 +457,7 @@ def make_dataset( data ):
                             file_path,
                             bug_line_num
                         )
+                        global merge_linenum_corrected_num
                         merge_linenum_corrected_num += 1
                         # file-levelデータ作成へ進む
 
@@ -473,6 +476,7 @@ def make_dataset( data ):
                         print(f'Warning: In project {repo_name}, for file {file_path} at commit {commit_sha}, bug line number {bug_line_num} not found in modified lines {modified_lines}.')
                         indexes_to_drop.append(index)
                         indexes_notfound_linenum.append(index)
+                        global linenum_notfound_num
                         linenum_notfound_num += 1
                         continue
                     else:
@@ -520,6 +524,7 @@ def make_dataset( data ):
                 else:
                     releases_indices[release_on_file[file_path]].append(index)  
              
+             global total_bugs_num
              total_bugs_num += 1         
          
          df_notfound = df_project.loc[indexes_notfound_linenum].copy()
