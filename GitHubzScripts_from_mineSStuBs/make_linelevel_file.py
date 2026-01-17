@@ -112,7 +112,7 @@ def append_csv(file_path, file_name, data):
         data.to_csv(f'{file_path}{file_name}', index=False, encoding="utf-8")
     else:
         # ファイルが存在する場合は追記モードで保存（ヘッダーは不要）
-        with open(file_path, "a", encoding="utf-8") as f:   # 改行を追加
+        with open(f'{file_path}{file_name}', "a", encoding="utf-8") as f:   # 改行を追加
             f.write("\n")
         data.to_csv(f'{file_path}{file_name}', mode='a', header=False, index=False, encoding="utf-8")
 
