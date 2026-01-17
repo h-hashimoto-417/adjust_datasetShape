@@ -112,8 +112,8 @@ def append_csv(file_path, file_name, data):
         data.to_csv(f'{file_path}{file_name}', index=False, encoding="utf-8")
     else:
         # ファイルが存在する場合は追記モードで保存（ヘッダーは不要）
-        with open(f'{file_path}{file_name}', "a", encoding="utf-8") as f:   # 改行を追加
-            f.write("\n")
+        # with open(f'{file_path}{file_name}', "a", encoding="utf-8") as f:   # 改行を追加
+        #     f.write("\n")
         data.to_csv(f'{file_path}{file_name}', mode='a', header=False, index=False, encoding="utf-8")
 
 
@@ -537,13 +537,11 @@ def make_dataset( data ):
          df_mergecommits = df_mergecommits[["projectName", "bugFilePath", "fixCommitSHA1", "bugLineNum", "bugType"]]
          if not df_mergecommits.empty:
              mergecommit_file = f'{repo_name}-merge_commit_bugs.csv'
-             save_csv(check_line_num_file_path, mergecommit_file, df_mergecommits)
+             #save_csv(check_line_num_file_path, mergecommit_file, df_mergecommits)
          
          filelevel_csv_name = f'{repo_name}-1.0.0_files_dataset.csv'
          linelevel_csv_name = f'{repo_name}-1.0.0_defective_lines_dataset.csv'
-        #  save_csv(file_level_path, filelevel_csv_name, df_filelevel)
-        #  save_csv(line_level_path, linelevel_csv_name, df_linelevel)
-        
+                
         ###### releaseごとにcsvファイルを生成 ######                  
          df_filelevel_releases = {}
          df_linelevel_releases = {}
@@ -559,8 +557,8 @@ def make_dataset( data ):
             for release_num, df_release in df_filelevel_releases.items():
                 filelevel_csv_name_release = f'{repo_name}-{release_num}.0.0_files_dataset.csv'
                 linelevel_csv_name_release = f'{repo_name}-{release_num}.0.0_defective_lines_dataset.csv'
-                save_csv(file_level_path, filelevel_csv_name_release, df_release)
-                save_csv(line_level_path, linelevel_csv_name_release, df_linelevel_releases[release_num])
+                #save_csv(file_level_path, filelevel_csv_name_release, df_release)
+                #save_csv(line_level_path, linelevel_csv_name_release, df_linelevel_releases[release_num])
 
          if os.path.isfile(f'{file_level_path}{filelevel_csv_name}') and os.path.isfile(f'{line_level_path}{linelevel_csv_name}'):
             global projects_yielded
