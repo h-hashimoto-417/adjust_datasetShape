@@ -96,6 +96,26 @@ def save_csv(file_path, file_name, data):
     # dataはpandasのDataFrame型を想定
     data.to_csv(f'{file_path}{file_name}', index=False, encoding="utf-8")
     #print(f'Result has been saved to {file_path}{file_name} successfully!')
+    
+
+def append_csv(file_path, file_name, data):
+    """
+    Append result into f{file_path}{file_name}.
+    :param file_path: The file location
+    :param file_name: The file name
+    :param data: The data # dataはpandasのDataFrame型を想定
+    :return:
+    """
+    make_path(file_path)    
+    if not os.path.isfile(f'{file_path}{file_name}'):
+        # ファイルが存在しない場合は新規作成
+        data.to_csv(f'{file_path}{file_name}', index=False, encoding="utf-8")
+    else:
+        # ファイルが存在する場合は追記モードで保存（ヘッダーは不要）
+        with open(file_path, "a", encoding="utf-8") as f:   # 改行を追加
+            f.write("\n")
+        data.to_csv(f'{file_path}{file_name}', mode='a', header=False, index=False, encoding="utf-8")
+
 
 def make_path(path):
     """
