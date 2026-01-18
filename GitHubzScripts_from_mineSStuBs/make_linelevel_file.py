@@ -112,8 +112,8 @@ def append_csv(file_path, file_name, data):
         data.to_csv(f'{file_path}{file_name}', index=False, encoding="utf-8")
     else:
         # ファイルが存在する場合は追記モードで保存（ヘッダーは不要）
-        # with open(f'{file_path}{file_name}', "a", encoding="utf-8") as f:   # 改行を追加
-        #     f.write("\n")
+        with open(f'{file_path}{file_name}', "a", encoding="utf-8") as f:   # 改行を追加
+            f.write("\n")
         data.to_csv(f'{file_path}{file_name}', mode='a', header=False, index=False, encoding="utf-8")
 
 
@@ -433,7 +433,7 @@ def make_dataset( data ):
                     indexes_merge_commit.append(index)
                     global has_same_commit_num
                     has_same_commit_num += 1
-                    df_duplicated = pd.concat([row, get_df_duplicate_commits(df_project, repo_name, commit_sha, file_path, bug_line_num)], axis=0)
+                    df_duplicated = pd.concat([df_project.loc[index], get_df_duplicate_commits(df_project, repo_name, commit_sha, file_path, bug_line_num)], axis=0)
                     append_csv(check_line_num_file_path, 'duplicate_merge_commits.csv', df_duplicated[["projectName", "bugFilePath", "fixCommitSHA1", "bugLineNum", "sourceBeforeFix", "bugType"]])
                     continue
                  else:
