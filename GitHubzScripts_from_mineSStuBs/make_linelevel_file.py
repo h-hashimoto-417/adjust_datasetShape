@@ -433,7 +433,7 @@ def make_dataset( data ):
                     indexes_merge_commit.append(index)
                     global has_same_commit_num
                     has_same_commit_num += 1
-                    df_duplicated = pd.concat([df_project.loc[index], get_df_duplicate_commits(df_project, repo_name, commit_sha, file_path, bug_line_num)], axis=0)
+                    df_duplicated = pd.concat([df_project.loc[[index]], get_df_duplicate_commits(df_project, repo_name, commit_sha, file_path, bug_line_num)], axis=0)
                     append_csv(check_line_num_file_path, 'duplicate_merge_commits.csv', df_duplicated[["projectName", "bugFilePath", "fixCommitSHA1", "bugLineNum", "sourceBeforeFix", "bugType"]])
                     continue
                  else:
