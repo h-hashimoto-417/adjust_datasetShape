@@ -410,7 +410,7 @@ def make_dataset( data ):
          # 必要な列のみ抽出、列名変更
          df_linelevel = df_project[["bugFilePath", "bugLineNum", "bugType", "fixCommitSHA1"]].copy()
          df_linelevel = df_linelevel.rename(columns={"bugFilePath": "File", "bugLineNum": "Line_number"}) 
-         df_linelevel.insert(df_linelevel.columns.get_loc("Line_number") + 1, "SRC", "")
+         df_linelevel.insert(df_linelevel.columns.get_loc("bugType") + 1, "SRC", "")
          df_linelevel["fixCommitParentSHA1"] = ""  # merge commitのみ親コミットを追加
          indexes_merge_commit = []
          indexes_notfound_linenum = []         
