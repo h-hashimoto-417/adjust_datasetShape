@@ -483,14 +483,14 @@ def make_dataset( data ):
                         df_linelevel.loc[index, "Line_number"] = modified_line
                         df_linelevel.loc[index, "SRC"] = get_file_line_at_commit(
                             f'{dataset_project_path}{repo_name}',
-                            commit_sha,
+                            commit_parent_sha,
                             file_path,
                             modified_line
                         )
                  else:
                      df_linelevel.loc[index, "SRC"] = get_file_line_at_commit( 
                          f'{dataset_project_path}{repo_name}',
-                         commit_sha,
+                         commit_parent_sha,
                          file_path,
                          bug_line_num
                      )
