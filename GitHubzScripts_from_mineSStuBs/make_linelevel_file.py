@@ -561,6 +561,12 @@ def make_dataset( data ):
          if not df_mergecommits.empty:
              mergecommit_file = f'{repo_name}-merge_commit_bugs.csv'
              #save_csv(check_line_num_file_path, mergecommit_file, df_mergecommits)
+             
+         target_bugtype = "CHANGE_UNARY_OPERATOR"
+         df_bugType = df_linelevel[df_linelevel["bugType"] == target_bugtype].copy()
+         df_bugType.insert(0, "project_name", repo_name)
+         if not df_bugType.empty:
+             append_csv_no_newline(f'{check_line_num_file_path}', f'{target_bugtype}_bugs_linelevel_dataset.csv', df_bugType)
          
          filelevel_csv_name = f'{repo_name}-1.0.0_files_dataset.csv'
          linelevel_csv_name = f'{repo_name}-1.0.0_defective_lines_dataset.csv'
@@ -580,8 +586,8 @@ def make_dataset( data ):
             for release_num, df_release in df_filelevel_releases.items():
                 filelevel_csv_name_release = f'{repo_name}-{release_num}.0.0_files_dataset.csv'
                 linelevel_csv_name_release = f'{repo_name}-{release_num}.0.0_defective_lines_dataset.csv'
-                save_csv(file_level_path, filelevel_csv_name_release, df_release)
-                save_csv(line_level_path, linelevel_csv_name_release, df_linelevel_releases[release_num])
+                #save_csv(file_level_path, filelevel_csv_name_release, df_release)
+                #save_csv(line_level_path, linelevel_csv_name_release, df_linelevel_releases[release_num])
 
          if os.path.isfile(f'{file_level_path}{filelevel_csv_name}') and os.path.isfile(f'{line_level_path}{linelevel_csv_name}'):
             global projects_yielded
