@@ -338,8 +338,14 @@ def check_bug_line_num(modified_lines, diff_file, bug_line_num):
     for start, length in read_diff_file(diff_file):
         if bug_line_num >= start and bug_line_num < start + length:
             for modified_line in modified_lines:
-                if modified_line >= start and modified_line < start + length:
-                    return modified_line == bug_line_num, modified_line
+                if modified_line >= start and modified_line < start + length:   # 他にも条件に一致するmodified_lineがある可能性がある
+                    if modified_line == bug_line_num:
+                        return True, modified_line
+                    else:
+                        real_num = modified_line
+                        continue
+            if 'real_num' in locals():  # modified_line == bug_line_numがTrueになるものが無かった場合は、最後にヒットしたmodified_lineを返す
+                return False, real_num                    
     return False, -1
     
  
