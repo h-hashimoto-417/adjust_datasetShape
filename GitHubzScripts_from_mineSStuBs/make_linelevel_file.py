@@ -59,6 +59,14 @@ skipped_projects = [
     'kbastani.spring-cloud-microservice-example' # no bugs
 ]
 
+# bugType
+bug_types_list = ["CHANGE_IDENTIFIER","CHANGE_MODIFIER","DIFFERENT_METHOD_SAME_ARGS",
+                  "CHANGE_NUMERAL","OVERLOAD_METHOD_MORE_ARGS","CHANGE_OPERATOR",
+                  "LESS_SPECIFIC_IF","CHANGE_CALLER_IN_FUNCTION_CALL","OVERLOAD_METHOD_DELETED_ARGS",
+                  "MORE_SPECIFIC_IF","CHANGE_UNARY_OPERATOR","SWAP_BOOLEAN_LITERAL",
+                  "SWAP_ARGUMENTS","CHANGE_OPERAND","ADD_THROWS_EXCEPTION","DELETE_THROWS_EXCEPTION"]
+
+
 def read_json_file( filename ) :
     with open(filename, 'r', encoding='utf-8') as f:
         data = json.load(f)
@@ -562,12 +570,12 @@ def make_dataset( data ):
              mergecommit_file = f'{repo_name}-merge_commit_bugs.csv'
              #save_csv(check_line_num_file_path, mergecommit_file, df_mergecommits)
              
-         target_bugtype = "CHANGE_UNARY_OPERATOR"
-         df_bugType = df_linelevel[df_linelevel["bugType"] == target_bugtype].copy()
-         df_bugType.insert(0, "project_name", repo_name)
-         if not df_bugType.empty:
-             append_csv_no_newline(f'{check_line_num_file_path}', f'{target_bugtype}_bugs_linelevel_dataset.csv', df_bugType)
-         
+         for target_bugtype in bug_types_list:
+            df_bugType = df_linelevel[df_linelevel["bugType"] == target_bugtype].copy()
+            df_bugType.insert(0, "project_name", repo_name)
+            if not df_bugType.empty:
+                append_csv_no_newline(f'{check_line_num_file_path}', f'{target_bugtype}_bugs_linelevel_dataset.csv', df_bugType)
+            
          filelevel_csv_name = f'{repo_name}-1.0.0_files_dataset.csv'
          linelevel_csv_name = f'{repo_name}-1.0.0_defective_lines_dataset.csv'
                 
